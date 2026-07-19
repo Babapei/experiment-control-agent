@@ -1,0 +1,61 @@
+{
+  "project": {
+    "name": "example-ea-sbm",
+    "description": "Sanitized example of a paper-experiment recovery profile.",
+    "control_root": "."
+  },
+  "workspaces": {
+    "classification": {
+      "path": "/path/to/writable/classification-rerun",
+      "writable": true
+    },
+    "generator": {
+      "path": "/path/to/writable/generator-rerun",
+      "writable": true
+    }
+  },
+  "originals": {
+    "classification": {
+      "path": "/path/to/original/classification",
+      "writable": false
+    }
+  },
+  "job_detection": {
+    "managed_hints": ["{root}", "classification-rerun", "generator-rerun"],
+    "patterns": [
+      {
+        "category": "batch_wrapper",
+        "regex": "runtime/batch_low_api/batches/.*/run_.*\\.sh"
+      },
+      {
+        "category": "downstream_repeat",
+        "regex": "scripts/(repeat_runs|repeat_confirmed_runs).*\\.py"
+      },
+      {
+        "category": "pretraining",
+        "regex": "pretrain_.*\\.py"
+      },
+      {
+        "category": "generator_pipeline",
+        "regex": "run_.*(vae|gan|generator).*\\.py"
+      }
+    ],
+    "exclude_patterns": [
+      "\\bcodex exec\\b",
+      "\\blist_active_jobs\\.py\\b",
+      "\\bvalidate_agent_state\\.py\\b"
+    ]
+  },
+  "results": {
+    "watch_paths": ["runtime", "workspaces/classification/rerun_outputs"],
+    "file_patterns": ["metrics_summary.json", "completed.json", "*aggregate*.json", "*aggregate*.md"],
+    "include_tmux_sessions": true,
+    "include_gpu_compute_apps": true
+  },
+  "project_docs": {
+    "cycle_brief": "profiles/example-ea-sbm/CYCLE_BRIEF.md",
+    "agents_policy": "profiles/example-ea-sbm/AGENTS.project.md",
+    "reference_docs": ["profiles/example-ea-sbm/targets.example.md"]
+  }
+}
+

@@ -1,0 +1,91 @@
+{
+  "project": {
+    "name": "example-experiment-agent",
+    "description": "Replace this with your project objective.",
+    "control_root": "."
+  },
+  "codex": {
+    "home": ".codex-home",
+    "auth_required": true,
+    "conda_init": "",
+    "conda_env": "",
+    "extra_path_entries": [],
+    "default_model": "",
+    "default_reasoning_effort": "",
+    "disable_response_storage": true
+  },
+  "supervisor": {
+    "session_name": "codex-experiment-agent",
+    "check_interval_seconds": 900,
+    "heartbeat_seconds": 3600,
+    "min_cycle_gap_seconds": 3600,
+    "cycle_timeout_seconds": 7200
+  },
+  "modes": {
+    "agent_modes": ["audit_exploration", "target_recovery"],
+    "default_agent_mode": "audit_exploration",
+    "execution_modes": ["event", "interval", "batch_low_api", "manual"],
+    "default_execution_mode": "manual",
+    "batch_profiles": {
+      "auto": {
+        "target_min_hours": 4,
+        "target_max_hours": 6,
+        "min_gpu_packages": 2,
+        "force_fill_idle_gpus": 4,
+        "max_codex_turns": 1
+      },
+      "long": {
+        "target_min_hours": 6,
+        "target_max_hours": 10,
+        "min_gpu_packages": 2,
+        "force_fill_idle_gpus": 4,
+        "max_codex_turns": 1
+      },
+      "overnight": {
+        "target_min_hours": 10,
+        "target_max_hours": 16,
+        "min_gpu_packages": 3,
+        "force_fill_idle_gpus": 4,
+        "max_codex_turns": 1
+      }
+    },
+    "default_batch_profile": "auto"
+  },
+  "workspaces": {},
+  "originals": {},
+  "job_detection": {
+    "managed_hints": ["{root}"],
+    "patterns": [
+      {
+        "category": "batch_wrapper",
+        "regex": "runtime/batch_low_api/batches/.*/run_.*\\.sh"
+      },
+      {
+        "category": "python_training",
+        "regex": "(^|/|\\s)(train|pretrain|evaluate).*\\.py(\\s|$)"
+      }
+    ],
+    "exclude_patterns": [
+      "\\bcodex exec\\b",
+      "\\blist_active_jobs\\.py\\b",
+      "\\bvalidate_agent_state\\.py\\b",
+      "\\brun_.*codex.*cycle\\.sh\\b",
+      "\\b(agent_loop|event_agent_loop|batch_low_api_loop)\\.sh\\b"
+    ]
+  },
+  "results": {
+    "watch_paths": ["runtime"],
+    "file_patterns": ["metrics_summary.json", "completed.json", "*aggregate*.json", "*aggregate*.md"],
+    "include_tmux_sessions": true,
+    "include_gpu_compute_apps": true
+  },
+  "batch": {
+    "manifest_columns": ["id", "lane", "target", "resources", "output_root", "log_path", "decision_after_completion"]
+  },
+  "project_docs": {
+    "cycle_brief": "profiles/default/CYCLE_BRIEF.md",
+    "agents_policy": "profiles/default/AGENTS.project.md",
+    "reference_docs": []
+  }
+}
+
