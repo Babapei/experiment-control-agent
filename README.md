@@ -22,6 +22,7 @@ cp configs/project.example.json configs/project.json
 $EDITOR configs/project.json
 
 python3 scripts/bootstrap_layout.py
+python3 scripts/doctor.py
 scripts/show_runtime_status.sh
 
 scripts/set_mode.sh agent target_recovery
@@ -37,6 +38,7 @@ scripts/launch_tmux_agent.sh
 - `scripts/`: supervisor, Codex runner, state, validation, and job tools.
 - `prompts/`: generic prompts used by `codex exec`.
 - `configs/project.example.json`: machine/project configuration template.
+- `profiles/default/`: runnable generic placeholder profile.
 - `profiles/`: optional example project profiles.
 - `runtime/`: local mutable state. Keep it out of git.
 - `logs/`: Codex runner/supervisor logs. Keep it out of git.
@@ -58,4 +60,3 @@ scripts/launch_tmux_agent.sh
   records, and later analyzes.
 - Never overwrite experiment evidence by default.
 - Prefer explicit batch manifests over implicit memory.
-

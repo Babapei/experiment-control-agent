@@ -20,3 +20,25 @@ Important sections:
 - `batch.manifest_columns`: required columns for low-API batch manifests.
 - `project_docs`: project-specific policy and reference files.
 
+## Inspection And Doctor
+
+Print the resolved config:
+
+```bash
+python3 scripts/inspect_config.py
+```
+
+Run setup checks:
+
+```bash
+python3 scripts/doctor.py
+```
+
+Use strict mode in CI or before publishing:
+
+```bash
+python3 scripts/doctor.py --strict
+```
+
+Warnings are not always fatal. For example, `nvidia-smi` may be unavailable on a
+CPU-only development laptop, but required on the actual GPU server.
