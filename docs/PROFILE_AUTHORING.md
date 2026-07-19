@@ -17,6 +17,7 @@ experiment means.
 ## What Belongs In A Profile
 
 - Research objective.
+- Agent mode contracts for project-specific objective modes.
 - Trusted and untrusted evidence sources.
 - Writability rules for workspaces and originals.
 - Target rows, metrics, or acceptance criteria.
@@ -34,6 +35,16 @@ experiment means.
 - Runner script names.
 - Domain-specific metric interpretations.
 - Private historical notes.
+
+## Mode Contract Tips
+
+Do not add an `AGENT_MODE` only because the name sounds useful. A good mode
+contract says what the planner must do differently in that mode.
+
+For example, an audit mode should say which uncertainty it reduces, what audit
+artifact it must produce, and what evidence promotes a probe into a larger run.
+A target-recovery mode should say how targets are ranked, what counts as a
+concrete push, and when a failed candidate leaves the target open.
 
 ## Job Detection Tips
 
@@ -59,4 +70,3 @@ The event and batch supervisors use `results.watch_paths` and
 `results.file_patterns` to decide whether state changed enough to call Codex.
 Keep these patterns narrow enough to avoid waking on every log write, but broad
 enough to catch final aggregates and completion markers.
-

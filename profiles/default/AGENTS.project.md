@@ -9,6 +9,12 @@ Manage long-running experiments with bounded LLM planning cycles. The agent
 should inspect state, launch documented non-conflicting work, update ledgers,
 and exit.
 
+## Objective Modes
+
+Objective modes are configured as contracts in `configs/project.json`. Do not
+add a mode unless its purpose, required artifacts, success criteria, and
+escalation criteria are clear enough for unattended planning.
+
 ## Safety Rules
 
 - Treat `originals/*` as read-only.

@@ -26,9 +26,14 @@ def doc_path(config: dict[str, Any], key: str) -> str:
 
 def render_context(config: dict[str, Any], prompt_kind: str) -> str:
     modes = config.get("modes", {})
+    agent_mode = read_state("AGENT_MODE", modes.get("default_agent_mode", ""))
+    execution_mode = read_state("EXECUTION_MODE", modes.get("default_execution_mode", ""))
     batch_profile = read_state("BATCH_PROFILE", modes.get("default_batch_profile", "auto"))
     batch_profiles = modes.get("batch_profiles", {})
     active_batch_profile = batch_profiles.get(batch_profile, {})
+    mode_contracts = modes.get("agent_mode_contracts", {})
+    active_mode_contract = mode_contracts.get(agent_mode, {}) if isinstance(mode_contracts, dict) else {}
+    active_mode_contract_json = json.dumps(active_mode_contract, ensure_ascii=False, indent=2)
     manifest_columns = config.get("batch", {}).get("manifest_columns", [])
     reference_docs = (config.get("project_docs") or {}).get("reference_docs", [])
 
@@ -38,8 +43,8 @@ def render_context(config: dict[str, Any], prompt_kind: str) -> str:
         f"- prompt_kind: `{prompt_kind}`",
         f"- config_path: `{config_path()}`",
         f"- project_name: `{config.get('project', {}).get('name', '')}`",
-        f"- agent_mode: `{read_state('AGENT_MODE', modes.get('default_agent_mode', ''))}`",
-        f"- execution_mode: `{read_state('EXECUTION_MODE', modes.get('default_execution_mode', ''))}`",
+        f"- agent_mode: `{agent_mode}`",
+        f"- execution_mode: `{execution_mode}`",
         f"- batch_profile: `{batch_profile}`",
         f"- agents_policy: `{doc_path(config, 'agents_policy')}`",
         f"- cycle_brief: `{doc_path(config, 'cycle_brief')}`",
@@ -47,7 +52,14 @@ def render_context(config: dict[str, Any], prompt_kind: str) -> str:
         f"- batch_profile_settings: `{json.dumps(active_batch_profile, ensure_ascii=False)}`",
         f"- manifest_columns: `{json.dumps(manifest_columns, ensure_ascii=False)}`",
         "",
+        "## Active Agent Mode Contract",
+        "",
+        "```json",
+        active_mode_contract_json,
+        "```",
+        "",
         "Read the configured project files above before making project-specific decisions.",
+        "Follow the active_agent_mode_contract when choosing actions and required artifacts.",
         "If a configured project file is missing, stop and report the configuration problem.",
         "",
         "---",
@@ -70,4 +82,3 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-

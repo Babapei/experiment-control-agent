@@ -11,18 +11,21 @@ Read:
 
 1. `runtime/batch_low_api_supervisor/supplemental_context.md` if it exists
 2. `configs/project.json` if present, otherwise `configs/project.example.json`
-3. the configured project policy and cycle brief under `project_docs`
-4. `runtime/AGENT_MODE`
-5. `runtime/EXECUTION_MODE`; expect `batch_low_api`
-6. `runtime/BATCH_PROFILE`
-7. `runtime/current_status.md` if it exists
-8. `runtime/research_lanes.md` if it exists
-9. the last 80-120 lines of `runtime/agent_journal.md` if it exists
+3. the rendered `active_agent_mode_contract`
+4. the configured project policy and cycle brief under `project_docs`
+5. `runtime/AGENT_MODE`
+6. `runtime/EXECUTION_MODE`; expect `batch_low_api`
+7. `runtime/BATCH_PROFILE`
+8. `runtime/current_status.md` if it exists
+9. `runtime/research_lanes.md` if it exists
+10. the last 80-120 lines of `runtime/agent_journal.md` if it exists
 
 Batch-planning rules:
 
 - Check active managed jobs first. If substantial work is still active, do not
   launch conflicting work.
+- Treat the active agent mode as a contract. The batch must satisfy its required
+  artifacts and success criteria, or record the matching escalation criterion.
 - If `supplemental_context.md` exists, this is a supplemental cycle. Some
   managed jobs are still active. Leave them untouched and launch only
   independent work for currently idle resources, or explain why no such work is

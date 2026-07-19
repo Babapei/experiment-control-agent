@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 from agent_core.config import get_value, load_config, resolve_path, root
 from scripts.compute_signature import command_lines
+from scripts.doctor import check_modes as doctor_check_modes
 from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
 from scripts.render_prompt import render_context
 
@@ -23,6 +24,7 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("project", config)
         self.assertIn("modes", config)
         self.assertEqual(get_value(config, "modes.default_batch_profile"), "auto")
+        self.assertIn("audit_exploration", get_value(config, "modes.agent_mode_contracts"))
 
     def test_root_interpolation(self) -> None:
         config = load_config()
@@ -80,7 +82,18 @@ class PromptRenderTests(unittest.TestCase):
         rendered = render_context(config, "cycle")
         self.assertIn("Rendered Agent Context", rendered)
         self.assertIn("agents_policy", rendered)
+        self.assertIn("active_agent_mode_contract", rendered)
         self.assertIn("manifest_columns", rendered)
+
+    def test_doctor_rejects_agent_mode_without_contract(self) -> None:
+        config = load_config()
+        config["modes"] = dict(config["modes"])
+        config["modes"]["agent_modes"] = ["missing_contract"]
+        config["modes"]["default_agent_mode"] = "missing_contract"
+        config["modes"]["agent_mode_contracts"] = {}
+        findings = []
+        doctor_check_modes(findings, config)
+        self.assertTrue([item for item in findings if item.severity == "ERROR" and "missing a contract" in item.message])
 
 
 class ScriptSmokeTests(unittest.TestCase):
@@ -97,6 +110,19 @@ class ScriptSmokeTests(unittest.TestCase):
     def test_toy_config_doctor_has_no_errors(self) -> None:
         env = os.environ.copy()
         env["AGENT_CONFIG"] = str(ROOT / "examples" / "toy-sleep-experiment" / "project.json")
+        proc = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "doctor.py"), "--json"],
+            text=True,
+            stdout=subprocess.PIPE,
+            env=env,
+            check=True,
+        )
+        findings = json.loads(proc.stdout)
+        self.assertFalse([item for item in findings if item["severity"] == "ERROR"])
+
+    def test_sanitized_profile_config_doctor_has_no_errors(self) -> None:
+        env = os.environ.copy()
+        env["AGENT_CONFIG"] = str(ROOT / "profiles" / "example-ea-sbm" / "project.example.json")
         proc = subprocess.run(
             [sys.executable, str(ROOT / "scripts" / "doctor.py"), "--json"],
             text=True,

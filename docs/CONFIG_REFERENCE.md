@@ -56,10 +56,21 @@ Controls loop timing:
 Defines allowed mode values and defaults:
 
 - `agent_modes`: project objective modes.
+- `agent_mode_contracts`: required contract for each project objective mode.
 - `execution_modes`: normally `event`, `interval`, `batch_low_api`, `manual`.
 - `batch_profiles`: soft targets for low-API planning depth.
 
 Profiles are guidance for the prompt and supervisor state, not blind quotas.
+
+Each `agent_mode_contracts.<mode>` object must include:
+
+- `purpose`: short string.
+- `entry_conditions`: when to use the mode.
+- `required_reads`: state/docs the planner must inspect.
+- `allowed_actions`: what the planner may do.
+- `required_artifacts`: what the cycle must write or produce.
+- `success_criteria`: how the cycle counts as useful.
+- `escalation_criteria`: when to stop or ask for help.
 
 ## `workspaces`
 
@@ -152,4 +163,3 @@ Project policy files injected into rendered prompts:
 
 Use these files for domain-specific details. Do not hardcode domain knowledge in
 core scripts.
-

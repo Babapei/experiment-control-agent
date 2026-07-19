@@ -135,7 +135,20 @@ Examples:
 - `target_recovery`
 
 These values are project-defined. Configure allowed values in
-`modes.agent_modes`.
+`modes.agent_modes`, and define each mode in `modes.agent_mode_contracts`.
+
+An agent mode is a contract, not just a label. Each mode should define:
+
+- purpose;
+- entry conditions;
+- required reads;
+- allowed actions;
+- required artifacts;
+- success criteria;
+- escalation criteria.
+
+If a mode cannot define those fields clearly, it is not ready to be an
+unattended objective mode.
 
 ### `EXECUTION_MODE`
 

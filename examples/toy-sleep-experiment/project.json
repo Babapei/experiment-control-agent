@@ -32,6 +32,69 @@
   "modes": {
     "agent_modes": ["audit_exploration", "target_recovery"],
     "default_agent_mode": "audit_exploration",
+    "agent_mode_contracts": {
+      "audit_exploration": {
+        "purpose": "Inspect toy runtime behavior without launching LLM calls.",
+        "entry_conditions": [
+          "the user is learning the control plane",
+          "toy task behavior or result signatures need inspection"
+        ],
+        "required_reads": [
+          "examples/toy-sleep-experiment/profile/CYCLE_BRIEF.md",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md",
+          "active toy jobs"
+        ],
+        "allowed_actions": [
+          "run the toy batch script",
+          "inspect completed.json files",
+          "update toy status and journal files"
+        ],
+        "required_artifacts": [
+          "completed.json files from toy tasks",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md"
+        ],
+        "success_criteria": [
+          "toy jobs launch and finish",
+          "result signature changes after completion",
+          "status files identify the generated outputs"
+        ],
+        "escalation_criteria": [
+          "toy task script fails before writing completed.json",
+          "job detection or result watch paths do not match the toy project"
+        ]
+      },
+      "target_recovery": {
+        "purpose": "Demonstrate a target-oriented mode using toy completion targets.",
+        "entry_conditions": [
+          "the user wants all toy tasks completed",
+          "completion files are the target evidence"
+        ],
+        "required_reads": [
+          "examples/toy-sleep-experiment/profile/TARGETS.md",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md"
+        ],
+        "allowed_actions": [
+          "launch missing toy tasks",
+          "inspect completed.json files",
+          "mark toy targets completed"
+        ],
+        "required_artifacts": [
+          "one completed.json per toy target",
+          "updated runtime/current_status.md",
+          "updated runtime/research_lanes.md"
+        ],
+        "success_criteria": [
+          "each toy target has a completion artifact",
+          "the status file points to the result directory"
+        ],
+        "escalation_criteria": [
+          "toy target names or expected outputs are ambiguous"
+        ]
+      }
+    },
     "execution_modes": ["event", "interval", "batch_low_api", "manual"],
     "default_execution_mode": "manual",
     "batch_profiles": {
@@ -94,4 +157,3 @@
     "reference_docs": ["examples/toy-sleep-experiment/profile/TARGETS.md"]
   }
 }
-

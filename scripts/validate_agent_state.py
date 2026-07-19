@@ -40,9 +40,12 @@ def check_modes(findings: list[Finding], config: dict) -> None:
     agent_mode = read(state_file("AGENT_MODE"), modes.get("default_agent_mode", ""))
     execution_mode = read(state_file("EXECUTION_MODE"), modes.get("default_execution_mode", ""))
     batch_profile = read(state_file("BATCH_PROFILE"), modes.get("default_batch_profile", "auto"))
+    contracts = modes.get("agent_mode_contracts", {})
 
     if agent_modes and agent_mode not in agent_modes:
         add(findings, "ERROR", "mode", f"invalid AGENT_MODE={agent_mode!r}")
+    if agent_mode and isinstance(contracts, dict) and agent_mode not in contracts:
+        add(findings, "ERROR", "mode", f"AGENT_MODE={agent_mode!r} has no agent_mode_contract")
     if execution_modes and execution_mode not in execution_modes:
         add(findings, "ERROR", "mode", f"invalid EXECUTION_MODE={execution_mode!r}")
     if batch_profiles and batch_profile not in batch_profiles:

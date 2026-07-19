@@ -4,6 +4,135 @@
     "description": "Sanitized example of a paper-experiment recovery profile.",
     "control_root": "."
   },
+  "codex": {
+    "home": ".codex-home",
+    "auth_required": true,
+    "conda_init": "",
+    "conda_env": "",
+    "extra_path_entries": [],
+    "default_model": "",
+    "default_reasoning_effort": "",
+    "fallback_after_failures": 3,
+    "fallback_model": "",
+    "fallback_reasoning_effort": "",
+    "secondary_fallback_after_failures": 5,
+    "secondary_fallback_model": "",
+    "secondary_fallback_reasoning_effort": "",
+    "disable_response_storage": true
+  },
+  "supervisor": {
+    "session_name": "experiment-control-agent",
+    "check_interval_seconds": 900,
+    "heartbeat_seconds": 3600,
+    "min_cycle_gap_seconds": 3600,
+    "cycle_timeout_seconds": 7200,
+    "retry_base_seconds": 300,
+    "retry_max_seconds": 3600
+  },
+  "modes": {
+    "agent_modes": ["audit_exploration", "target_recovery"],
+    "default_agent_mode": "target_recovery",
+    "agent_mode_contracts": {
+      "audit_exploration": {
+        "purpose": "Audit uncertain experiment chains before treating them as recovery candidates.",
+        "entry_conditions": [
+          "row provenance, metric mapping, leakage risk, or runner behavior is unclear",
+          "a candidate needs a narrow probe before full-row execution"
+        ],
+        "required_reads": [
+          "profiles/example-ea-sbm/AGENTS.project.md",
+          "profiles/example-ea-sbm/CYCLE_BRIEF.md",
+          "profiles/example-ea-sbm/targets.example.md",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md"
+        ],
+        "allowed_actions": [
+          "config and command audits",
+          "data/provenance checks",
+          "single-factor smoke tests",
+          "candidate package design"
+        ],
+        "required_artifacts": [
+          "audit evidence path",
+          "updated lane note",
+          "journal entry",
+          "promotion or follow-up criterion"
+        ],
+        "success_criteria": [
+          "the uncertainty blocking a target row is reduced",
+          "the next action is a specific candidate, blocker, or follow-up audit"
+        ],
+        "escalation_criteria": [
+          "target definition is missing",
+          "evidence needed for the audit is outside available workspaces",
+          "the next action would require broad model redesign"
+        ]
+      },
+      "target_recovery": {
+        "purpose": "Recover predefined paper/table rows with reproducible evidence.",
+        "entry_conditions": [
+          "target rows and primary metrics are defined",
+          "the next useful action can be tied to a specific row or row family"
+        ],
+        "required_reads": [
+          "profiles/example-ea-sbm/AGENTS.project.md",
+          "profiles/example-ea-sbm/CYCLE_BRIEF.md",
+          "profiles/example-ea-sbm/targets.example.md",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md",
+          "recent runtime/agent_journal.md entries"
+        ],
+        "allowed_actions": [
+          "rank open rows by target gap and urgency",
+          "launch full or remaining-fold row packages",
+          "launch upstream/unblocking tasks when a row is not ready",
+          "update row state from aggregate evidence"
+        ],
+        "required_artifacts": [
+          "selected target row or row family",
+          "hypothesis, command, output root, and log path",
+          "decision expected after completion",
+          "updated status, journal, and row/lane ledger"
+        ],
+        "success_criteria": [
+          "an open row receives a concrete push or a documented true blocker",
+          "a failed candidate does not close the row",
+          "evidence is recorded with metric/provenance caveats"
+        ],
+        "escalation_criteria": [
+          "all open rows require external information",
+          "primary metrics or target thresholds are ambiguous",
+          "the next recovery step would risk leakage or overwrite evidence"
+        ]
+      }
+    },
+    "execution_modes": ["event", "interval", "batch_low_api", "manual"],
+    "default_execution_mode": "manual",
+    "batch_profiles": {
+      "auto": {
+        "target_min_hours": 4,
+        "target_max_hours": 6,
+        "min_gpu_packages": 2,
+        "force_fill_idle_gpus": 4,
+        "max_codex_turns": 1
+      },
+      "long": {
+        "target_min_hours": 6,
+        "target_max_hours": 10,
+        "min_gpu_packages": 2,
+        "force_fill_idle_gpus": 4,
+        "max_codex_turns": 1
+      },
+      "overnight": {
+        "target_min_hours": 10,
+        "target_max_hours": 16,
+        "min_gpu_packages": 3,
+        "force_fill_idle_gpus": 4,
+        "max_codex_turns": 1
+      }
+    },
+    "default_batch_profile": "auto"
+  },
   "workspaces": {
     "classification": {
       "path": "/path/to/writable/classification-rerun",
@@ -52,10 +181,21 @@
     "include_tmux_sessions": true,
     "include_gpu_compute_apps": true
   },
+  "batch": {
+    "manifest_columns": ["id", "lane", "target", "resources", "output_root", "log_path", "decision_after_completion"],
+    "supplemental": {
+      "enabled": true,
+      "min_active_seconds": 7200,
+      "min_cycle_gap_seconds": 14400,
+      "result_change_gap_seconds": 1800,
+      "min_idle_gpus": 4,
+      "idle_gpu_memory_max_mb": 1000,
+      "idle_gpu_util_max": 10
+    }
+  },
   "project_docs": {
     "cycle_brief": "profiles/example-ea-sbm/CYCLE_BRIEF.md",
     "agents_policy": "profiles/example-ea-sbm/AGENTS.project.md",
     "reference_docs": ["profiles/example-ea-sbm/targets.example.md"]
   }
 }
-

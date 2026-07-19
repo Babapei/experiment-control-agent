@@ -3,12 +3,13 @@ You are running one bounded autonomous cycle for a server-side experiment agent.
 Start by reading:
 
 1. `configs/project.json` if present, otherwise `configs/project.example.json`
-2. the configured project policy and cycle brief under `project_docs`
-3. `runtime/AGENT_MODE`
-4. `runtime/EXECUTION_MODE`
-5. `runtime/current_status.md` if it exists
-6. `runtime/research_lanes.md` if it exists
-7. the last 80-120 lines of `runtime/agent_journal.md` if it exists
+2. the rendered `active_agent_mode_contract`
+3. the configured project policy and cycle brief under `project_docs`
+4. `runtime/AGENT_MODE`
+5. `runtime/EXECUTION_MODE`
+6. `runtime/current_status.md` if it exists
+7. `runtime/research_lanes.md` if it exists
+8. the last 80-120 lines of `runtime/agent_journal.md` if it exists
 
 Perform one bounded research-management pass:
 
@@ -17,6 +18,10 @@ Perform one bounded research-management pass:
 - choose the next safe action from the project profile and runtime ledgers;
 - launch only documented, non-conflicting work;
 - update runtime ledgers before exiting.
+
+The active agent mode is a contract, not just a label. The cycle must satisfy
+its required artifacts and success criteria, or record the matching escalation
+criterion.
 
 Do not run an open-ended loop inside this Codex call. Supervisors are external.
 Do not modify originals or historical reference workspaces unless the project
@@ -31,4 +36,3 @@ Before exiting, update:
 4. any project-specific dashboard configured by the profile
 
 Final response: short operational summary only.
-

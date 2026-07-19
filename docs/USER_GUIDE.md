@@ -135,6 +135,8 @@ Edit `configs/project.json`:
 - `job_detection.patterns`
 - `results.watch_paths`
 - `results.file_patterns`
+- `modes.agent_modes`
+- `modes.agent_mode_contracts`
 - `project_docs`
 
 Edit `profiles/my-project/AGENTS.project.md`:
@@ -187,6 +189,7 @@ Use `event` only when you are comfortable with more frequent planning calls.
 
 Before leaving the agent running, confirm:
 
+- What objective mode is active, and what contract defines success?
 - Which directories can the agent modify?
 - Which commands can it launch?
 - How are active jobs detected?

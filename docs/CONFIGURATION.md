@@ -36,6 +36,9 @@ For a new project, configure in this order:
 6. `codex`, so the current planning-provider implementation can authenticate
    and run in the right environment.
 
+For `modes`, define objective modes as contracts. Every value in
+`modes.agent_modes` needs a matching `modes.agent_mode_contracts.<mode>` entry.
+
 Prompt rendering uses these fields on every planning-provider call. Check the
 rendered prompt with:
 

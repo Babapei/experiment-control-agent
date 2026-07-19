@@ -31,10 +31,37 @@ def check_modes(findings: list[Finding], cfg: dict[str, Any]) -> None:
     agent_modes = modes.get("agent_modes", [])
     execution_modes = modes.get("execution_modes", [])
     batch_profiles = modes.get("batch_profiles", {})
+    mode_contracts = modes.get("agent_mode_contracts", {})
     if not isinstance(agent_modes, list) or not agent_modes:
         add(findings, "ERROR", "modes", "modes.agent_modes must be a non-empty list")
     if modes.get("default_agent_mode") not in agent_modes:
         add(findings, "ERROR", "modes", "default_agent_mode is not listed in agent_modes")
+    if not isinstance(mode_contracts, dict):
+        add(findings, "ERROR", "modes", "modes.agent_mode_contracts must be an object")
+        mode_contracts = {}
+    required_contract_fields = (
+        "purpose",
+        "entry_conditions",
+        "required_reads",
+        "allowed_actions",
+        "required_artifacts",
+        "success_criteria",
+        "escalation_criteria",
+    )
+    for mode in agent_modes if isinstance(agent_modes, list) else []:
+        contract = mode_contracts.get(mode)
+        if not isinstance(contract, dict):
+            add(findings, "ERROR", "modes", f"agent mode {mode!r} is missing a contract")
+            continue
+        for field in required_contract_fields:
+            value = contract.get(field)
+            if field == "purpose":
+                if not isinstance(value, str) or not value.strip():
+                    add(findings, "ERROR", "modes", f"agent mode {mode!r} contract field {field!r} must be a non-empty string")
+            elif not isinstance(value, list) or not value or not all(isinstance(item, str) and item.strip() for item in value):
+                add(findings, "ERROR", "modes", f"agent mode {mode!r} contract field {field!r} must be a non-empty list of strings")
+    for extra_mode in sorted(set(mode_contracts) - set(agent_modes if isinstance(agent_modes, list) else [])):
+        add(findings, "WARN", "modes", f"agent mode contract {extra_mode!r} is not listed in modes.agent_modes")
     if not isinstance(execution_modes, list) or not execution_modes:
         add(findings, "ERROR", "modes", "modes.execution_modes must be a non-empty list")
     if modes.get("default_execution_mode") not in execution_modes:

@@ -32,6 +32,85 @@
   "modes": {
     "agent_modes": ["audit_exploration", "target_recovery"],
     "default_agent_mode": "audit_exploration",
+    "agent_mode_contracts": {
+      "audit_exploration": {
+        "purpose": "Reduce uncertainty before committing expensive experiments.",
+        "entry_conditions": [
+          "failure cause, data provenance, leakage risk, or command mapping is unclear",
+          "a new route needs a narrow probe, smoke test, or audit before full execution",
+          "the project does not yet have enough evidence for target recovery or production runs"
+        ],
+        "required_reads": [
+          "configured project policy and cycle brief",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md",
+          "recent runtime/agent_journal.md entries",
+          "active managed jobs"
+        ],
+        "allowed_actions": [
+          "focused audits",
+          "single-factor probes",
+          "smoke tests",
+          "data/provenance/leakage checks",
+          "candidate package design without launching if evidence is insufficient"
+        ],
+        "required_artifacts": [
+          "audit or probe evidence path",
+          "updated status or lane note",
+          "journal entry with the next decision",
+          "promotion, rejection, or follow-up criterion"
+        ],
+        "success_criteria": [
+          "one uncertainty is materially reduced",
+          "the next safe action is more specific than before",
+          "the agent avoids broad metric-chasing or premature full runs"
+        ],
+        "escalation_criteria": [
+          "the next step needs user-only context",
+          "safe write boundaries or trusted evidence sources are unclear",
+          "the required action would be a broad redesign rather than a bounded probe"
+        ]
+      },
+      "target_recovery": {
+        "purpose": "Recover or improve predefined target results using reproducible evidence.",
+        "entry_conditions": [
+          "target rows, metrics, or acceptance criteria are already defined",
+          "there is enough project context to choose result-bearing candidates",
+          "the user values progress toward targets more than additional open-ended exploration"
+        ],
+        "required_reads": [
+          "configured project policy and cycle brief",
+          "target dashboard or equivalent project reference",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md",
+          "recent runtime/agent_journal.md entries",
+          "active managed jobs and watched results"
+        ],
+        "allowed_actions": [
+          "rank open targets by urgency and evidence gap",
+          "launch documented full or remaining-fold/result-bearing packages",
+          "launch executable unblocking audits when a target is not ready",
+          "update target state from completed evidence"
+        ],
+        "required_artifacts": [
+          "target or lane selected",
+          "hypothesis and command for each launched package",
+          "output root and log path",
+          "decision expected after completion",
+          "updated status, journal, and target/lane ledger"
+        ],
+        "success_criteria": [
+          "at least one open target receives a concrete push or a true blocker",
+          "failed candidates do not silently close the target",
+          "result-bearing work is preferred when evidence is sufficient"
+        ],
+        "escalation_criteria": [
+          "all open targets are blocked by external dependencies",
+          "target metrics or acceptance criteria are ambiguous",
+          "the next recovery step would require unsafe or destructive changes"
+        ]
+      }
+    },
     "execution_modes": ["event", "interval", "batch_low_api", "manual"],
     "default_execution_mode": "manual",
     "batch_profiles": {
