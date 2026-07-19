@@ -82,7 +82,6 @@ Use these when needed:
 - [`docs/AUTH_SETUP.md`](docs/AUTH_SETUP.md): current Codex CLI provider setup.
 - [`docs/PUBLISHING.md`](docs/PUBLISHING.md) and [`SECURITY.md`](SECURITY.md):
   public release and sensitive-file checks.
-- [`ROADMAP.md`](ROADMAP.md): current status and future hardening ideas.
 
 ## Repository Layout
 
