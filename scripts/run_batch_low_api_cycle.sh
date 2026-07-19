@@ -56,6 +56,7 @@ CYCLE_TIMEOUT_SECONDS="${CYCLE_TIMEOUT_SECONDS:-$("$PYTHON_BIN" "$CONFIG_VALUE" 
 BATCH_PROFILE="${BATCH_PROFILE:-$(cat "$BASE_DIR/runtime/BATCH_PROFILE" 2>/dev/null || "$PYTHON_BIN" "$CONFIG_VALUE" modes.default_batch_profile auto)}"
 CODEX_MODEL_OVERRIDE="${CODEX_MODEL_OVERRIDE:-}"
 CODEX_REASONING_EFFORT_OVERRIDE="${CODEX_REASONING_EFFORT_OVERRIDE:-}"
+SUPPLEMENTAL_BATCH="${SUPPLEMENTAL_BATCH:-0}"
 CODEX_EXEC_OVERRIDES=()
 
 if [[ -n "$CODEX_MODEL_OVERRIDE" ]]; then
@@ -114,6 +115,14 @@ PY
   echo "  last_message: $TEXT_LOG"
 } >> "$BASE_DIR/logs/batch_low_api_runner.log"
 
+is_transient_codex_failure() {
+  local log_file="$1"
+  [[ -f "$log_file" ]] || return 1
+  grep -Eiq \
+    'Selected model is at capacity|model is at capacity|rate limit|temporar(il)?y|try again|overloaded|429|502|503|504|gateway|timeout|timed out|connection reset|connection refused|network|ECONN|ETIMEDOUT|service unavailable' \
+    "$log_file"
+}
+
 set +e
 cat "$BASE_DIR/prompts/batch_low_api_cycle_prompt.md" | \
   timeout "$CYCLE_TIMEOUT_SECONDS" \
@@ -136,6 +145,10 @@ if [[ "$status" -eq 124 ]]; then
 elif [[ "$status" -ne 0 ]]; then
   record_usage "failed"
   echo "[$(date '+%F %T')] low-API cycle $STAMP failed with status $status" >> "$BASE_DIR/logs/batch_low_api_runner.log"
+  if is_transient_codex_failure "$JSONL_LOG"; then
+    echo "[$(date '+%F %T')] classified as transient failure" >> "$BASE_DIR/logs/batch_low_api_runner.log"
+    exit 75
+  fi
   exit "$status"
 fi
 

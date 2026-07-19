@@ -19,6 +19,8 @@ def main(argv: list[str]) -> int:
     value = get_value(cfg, argv[0], default)
     if isinstance(value, (dict, list)):
         print(json.dumps(value, ensure_ascii=False))
+    elif isinstance(value, bool):
+        print("true" if value else "false")
     elif value is None:
         print("")
     else:

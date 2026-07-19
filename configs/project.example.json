@@ -12,6 +12,12 @@
     "extra_path_entries": [],
     "default_model": "",
     "default_reasoning_effort": "",
+    "fallback_after_failures": 3,
+    "fallback_model": "",
+    "fallback_reasoning_effort": "",
+    "secondary_fallback_after_failures": 5,
+    "secondary_fallback_model": "",
+    "secondary_fallback_reasoning_effort": "",
     "disable_response_storage": true
   },
   "supervisor": {
@@ -19,7 +25,9 @@
     "check_interval_seconds": 900,
     "heartbeat_seconds": 3600,
     "min_cycle_gap_seconds": 3600,
-    "cycle_timeout_seconds": 7200
+    "cycle_timeout_seconds": 7200,
+    "retry_base_seconds": 300,
+    "retry_max_seconds": 3600
   },
   "modes": {
     "agent_modes": ["audit_exploration", "target_recovery"],
@@ -80,7 +88,16 @@
     "include_gpu_compute_apps": true
   },
   "batch": {
-    "manifest_columns": ["id", "lane", "target", "resources", "output_root", "log_path", "decision_after_completion"]
+    "manifest_columns": ["id", "lane", "target", "resources", "output_root", "log_path", "decision_after_completion"],
+    "supplemental": {
+      "enabled": true,
+      "min_active_seconds": 7200,
+      "min_cycle_gap_seconds": 14400,
+      "result_change_gap_seconds": 1800,
+      "min_idle_gpus": 4,
+      "idle_gpu_memory_max_mb": 1000,
+      "idle_gpu_util_max": 10
+    }
   },
   "project_docs": {
     "cycle_brief": "profiles/default/CYCLE_BRIEF.md",
@@ -88,4 +105,3 @@
     "reference_docs": []
   }
 }
-

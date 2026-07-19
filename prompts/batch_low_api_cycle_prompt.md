@@ -7,19 +7,24 @@ after the batch finishes or when the user explicitly asks.
 
 Read:
 
-1. `configs/project.json` if present, otherwise `configs/project.example.json`
-2. the configured project policy and cycle brief under `project_docs`
-3. `runtime/AGENT_MODE`
-4. `runtime/EXECUTION_MODE`; expect `batch_low_api`
-5. `runtime/BATCH_PROFILE`
-6. `runtime/current_status.md` if it exists
-7. `runtime/research_lanes.md` if it exists
-8. the last 80-120 lines of `runtime/agent_journal.md` if it exists
+1. `runtime/batch_low_api_supervisor/supplemental_context.md` if it exists
+2. `configs/project.json` if present, otherwise `configs/project.example.json`
+3. the configured project policy and cycle brief under `project_docs`
+4. `runtime/AGENT_MODE`
+5. `runtime/EXECUTION_MODE`; expect `batch_low_api`
+6. `runtime/BATCH_PROFILE`
+7. `runtime/current_status.md` if it exists
+8. `runtime/research_lanes.md` if it exists
+9. the last 80-120 lines of `runtime/agent_journal.md` if it exists
 
 Batch-planning rules:
 
 - Check active managed jobs first. If substantial work is still active, do not
   launch conflicting work.
+- If `supplemental_context.md` exists, this is a supplemental cycle. Some
+  managed jobs are still active. Leave them untouched and launch only
+  independent work for currently idle resources, or explain why no such work is
+  safe.
 - Select a project-specific frontier or priority queue before choosing commands.
 - Prefer batches that can run for hours without another Codex call when the
   active batch profile asks for that.
@@ -45,4 +50,3 @@ Required low-API artifacts:
 
 Final response: short operational summary including whether jobs were launched
 and the batch directory.
-
