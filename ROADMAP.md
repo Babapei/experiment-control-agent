@@ -116,6 +116,7 @@ Each commit should keep the repository runnable.
 
 ## Optional Hardening Before A Public v1 Tag
 
+- Work through `docs/CORE_DESIGN_AUDIT.md` before adding broad new features.
 - Add CI configuration after the GitHub repository exists.
 - Decide whether MIT is the final license.
 - Add richer real-world sanitized example profiles if desired.

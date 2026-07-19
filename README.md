@@ -79,6 +79,8 @@ Use these when needed:
   failure modes.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): control flow and runtime
   state model.
+- [`docs/CORE_DESIGN_AUDIT.md`](docs/CORE_DESIGN_AUDIT.md): design-level
+  issues and hardening order for the agent core.
 - [`docs/AUTH_SETUP.md`](docs/AUTH_SETUP.md): current Codex CLI provider setup.
 - [`docs/PUBLISHING.md`](docs/PUBLISHING.md) and [`SECURITY.md`](SECURITY.md):
   public release and sensitive-file checks.
