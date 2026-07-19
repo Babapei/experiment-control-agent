@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -74,7 +76,41 @@ class ScriptSmokeTests(unittest.TestCase):
         findings = json.loads(proc.stdout)
         self.assertFalse([item for item in findings if item["severity"] == "ERROR"])
 
+    def test_toy_config_doctor_has_no_errors(self) -> None:
+        env = os.environ.copy()
+        env["AGENT_CONFIG"] = str(ROOT / "examples" / "toy-sleep-experiment" / "project.json")
+        proc = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "doctor.py"), "--json"],
+            text=True,
+            stdout=subprocess.PIPE,
+            env=env,
+            check=True,
+        )
+        findings = json.loads(proc.stdout)
+        self.assertFalse([item for item in findings if item["severity"] == "ERROR"])
+
+    def test_toy_task_writes_completed_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "toy"
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "examples" / "toy-sleep-experiment" / "toy_task.py"),
+                    "--task-id",
+                    "unit-test",
+                    "--duration",
+                    "0",
+                    "--output-dir",
+                    str(output_dir),
+                ],
+                check=True,
+                stdout=subprocess.PIPE,
+                text=True,
+            )
+            payload = json.loads((output_dir / "completed.json").read_text(encoding="utf-8"))
+            self.assertEqual(payload["task_id"], "unit-test")
+            self.assertEqual(payload["status"], "completed")
+
 
 if __name__ == "__main__":
     unittest.main()
-

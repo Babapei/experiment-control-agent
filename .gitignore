@@ -7,6 +7,7 @@ archive/
 
 .env
 .env.*
+configs/project.json
 *.key
 *.pem
 *.sqlite
@@ -48,4 +49,3 @@ runs/
 *.fits
 *.onnx
 *.safetensors
-

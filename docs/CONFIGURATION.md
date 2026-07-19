@@ -20,6 +20,8 @@ Important sections:
 - `batch.manifest_columns`: required columns for low-API batch manifests.
 - `project_docs`: project-specific policy and reference files.
 
+For a field-by-field reference, see `docs/CONFIG_REFERENCE.md`.
+
 Prompt rendering uses these fields on every Codex call. Check the rendered
 prompt with:
 

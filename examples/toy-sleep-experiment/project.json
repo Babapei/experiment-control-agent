@@ -1,0 +1,97 @@
+{
+  "project": {
+    "name": "toy-sleep-experiment",
+    "description": "CPU-only demo profile for Experiment Control Agent.",
+    "control_root": "."
+  },
+  "codex": {
+    "home": ".codex-home",
+    "auth_required": false,
+    "conda_init": "",
+    "conda_env": "",
+    "extra_path_entries": [],
+    "default_model": "",
+    "default_reasoning_effort": "",
+    "fallback_after_failures": 3,
+    "fallback_model": "",
+    "fallback_reasoning_effort": "",
+    "secondary_fallback_after_failures": 5,
+    "secondary_fallback_model": "",
+    "secondary_fallback_reasoning_effort": "",
+    "disable_response_storage": true
+  },
+  "supervisor": {
+    "session_name": "experiment-control-agent",
+    "check_interval_seconds": 10,
+    "heartbeat_seconds": 60,
+    "min_cycle_gap_seconds": 30,
+    "cycle_timeout_seconds": 300,
+    "retry_base_seconds": 10,
+    "retry_max_seconds": 60
+  },
+  "modes": {
+    "agent_modes": ["audit_exploration", "target_recovery"],
+    "default_agent_mode": "audit_exploration",
+    "execution_modes": ["event", "interval", "batch_low_api", "manual"],
+    "default_execution_mode": "manual",
+    "batch_profiles": {
+      "auto": {
+        "target_min_hours": 0,
+        "target_max_hours": 1,
+        "min_gpu_packages": 0,
+        "force_fill_idle_gpus": 0,
+        "max_codex_turns": 1
+      }
+    },
+    "default_batch_profile": "auto"
+  },
+  "workspaces": {
+    "toy": {
+      "path": "examples/toy-sleep-experiment",
+      "writable": true
+    }
+  },
+  "originals": {},
+  "job_detection": {
+    "managed_hints": ["{root}", "toy-sleep-experiment"],
+    "patterns": [
+      {
+        "category": "toy_task",
+        "regex": "examples/toy-sleep-experiment/toy_task\\.py"
+      },
+      {
+        "category": "batch_wrapper",
+        "regex": "runtime/batch_low_api/batches/.*/run_.*\\.sh"
+      }
+    ],
+    "exclude_patterns": [
+      "\\bcodex exec\\b",
+      "\\blist_active_jobs\\.py\\b",
+      "\\bvalidate_agent_state\\.py\\b"
+    ]
+  },
+  "results": {
+    "watch_paths": ["runtime", "examples/toy-sleep-experiment/results"],
+    "file_patterns": ["completed.json", "metrics_summary.json", "*aggregate*.json"],
+    "include_tmux_sessions": false,
+    "include_gpu_compute_apps": false
+  },
+  "batch": {
+    "manifest_columns": ["id", "lane", "target", "resources", "output_root", "log_path", "decision_after_completion"],
+    "supplemental": {
+      "enabled": false,
+      "min_active_seconds": 60,
+      "min_cycle_gap_seconds": 60,
+      "result_change_gap_seconds": 30,
+      "min_idle_gpus": 0,
+      "idle_gpu_memory_max_mb": 1000,
+      "idle_gpu_util_max": 10
+    }
+  },
+  "project_docs": {
+    "cycle_brief": "examples/toy-sleep-experiment/profile/CYCLE_BRIEF.md",
+    "agents_policy": "examples/toy-sleep-experiment/profile/AGENTS.project.md",
+    "reference_docs": ["examples/toy-sleep-experiment/profile/TARGETS.md"]
+  }
+}
+
