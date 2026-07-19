@@ -346,7 +346,26 @@ while true; do
   [[ -f "$BASE_DIR/runtime/PAUSE" ]] && sleep "$CHECK_INTERVAL_SECONDS" && continue
 
   mode="$(cat "$BASE_DIR/runtime/EXECUTION_MODE" 2>/dev/null || echo manual)"
-  [[ "$mode" != "batch_low_api" ]] && log "EXECUTION_MODE=$mode; exiting." && exit 0
+  case "$mode" in
+    batch_low_api)
+      ;;
+    event)
+      log "EXECUTION_MODE=event detected; handing off."
+      exec "$BASE_DIR/scripts/event_agent_loop.sh"
+      ;;
+    interval)
+      log "EXECUTION_MODE=interval detected; handing off."
+      exec "$BASE_DIR/scripts/agent_loop.sh"
+      ;;
+    manual)
+      sleep "$CHECK_INTERVAL_SECONDS"
+      continue
+      ;;
+    *)
+      log "unsupported EXECUTION_MODE=$mode; exiting."
+      exit 1
+      ;;
+  esac
   cycle_running && sleep "$CHECK_INTERVAL_SECONDS" && continue
 
   now="$(date '+%s')"

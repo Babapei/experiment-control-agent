@@ -54,6 +54,28 @@ def check_modes(findings: list[Finding], cfg: dict[str, Any]) -> None:
                 add(findings, "WARN", "modes", f"batch profile {name!r} has missing/non-negative-int field {key!r}")
 
 
+def check_numeric_config(findings: list[Finding], cfg: dict[str, Any]) -> None:
+    supervisor = cfg.get("supervisor", {})
+    for key in ("check_interval_seconds", "heartbeat_seconds", "min_cycle_gap_seconds", "cycle_timeout_seconds", "retry_base_seconds", "retry_max_seconds"):
+        value = supervisor.get(key)
+        if not isinstance(value, int) or value <= 0:
+            add(findings, "ERROR", "supervisor", f"supervisor.{key} must be a positive integer")
+    if isinstance(supervisor.get("retry_base_seconds"), int) and isinstance(supervisor.get("retry_max_seconds"), int):
+        if supervisor["retry_base_seconds"] > supervisor["retry_max_seconds"]:
+            add(findings, "WARN", "supervisor", "retry_base_seconds is greater than retry_max_seconds")
+
+    supplemental = cfg.get("batch", {}).get("supplemental", {})
+    if not isinstance(supplemental, dict):
+        add(findings, "ERROR", "batch", "batch.supplemental must be an object")
+        return
+    if not isinstance(supplemental.get("enabled", False), bool):
+        add(findings, "ERROR", "batch", "batch.supplemental.enabled must be a boolean")
+    for key in ("min_active_seconds", "min_cycle_gap_seconds", "result_change_gap_seconds", "min_idle_gpus", "idle_gpu_memory_max_mb", "idle_gpu_util_max"):
+        value = supplemental.get(key)
+        if not isinstance(value, int) or value < 0:
+            add(findings, "ERROR", "batch", f"batch.supplemental.{key} must be a non-negative integer")
+
+
 def check_regexes(findings: list[Finding], cfg: dict[str, Any]) -> None:
     detection = cfg.get("job_detection", {})
     for section in ("patterns",):
@@ -111,8 +133,16 @@ def check_results(findings: list[Finding], cfg: dict[str, Any]) -> None:
     patterns = results.get("file_patterns", [])
     if not isinstance(paths, list) or not paths:
         add(findings, "ERROR", "results", "results.watch_paths must be a non-empty list")
+    else:
+        for path_text in paths:
+            path = resolve_path(str(path_text))
+            if not path.exists():
+                add(findings, "WARN", "results", f"watch path does not exist yet: {path}")
     if not isinstance(patterns, list) or not patterns:
         add(findings, "WARN", "results", "results.file_patterns is empty; every file under watch_paths may be ignored")
+    manifest_columns = cfg.get("batch", {}).get("manifest_columns", [])
+    if not isinstance(manifest_columns, list) or not manifest_columns or not all(isinstance(item, str) and item for item in manifest_columns):
+        add(findings, "ERROR", "batch", "batch.manifest_columns must be a non-empty list of strings")
 
 
 def check_tools(findings: list[Finding], cfg: dict[str, Any]) -> None:
@@ -142,6 +172,7 @@ def run_checks() -> list[Finding]:
         return [Finding("ERROR", "config", f"cannot load {config_path()}: {exc}")]
     add(findings, "INFO", "config", f"using config: {config_path()}")
     check_modes(findings, cfg)
+    check_numeric_config(findings, cfg)
     check_regexes(findings, cfg)
     check_paths(findings, cfg)
     check_project_docs(findings, cfg)
@@ -177,4 +208,3 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-

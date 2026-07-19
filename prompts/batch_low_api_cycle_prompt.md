@@ -2,8 +2,10 @@ You are running one low-API batch-planning cycle for a server-side experiment
 agent.
 
 This cycle should spend Codex reasoning once, design/launch ordinary shell,
-tmux, scheduler, or Python jobs, then exit. The next Codex call should happen
-after the batch finishes or when the user explicitly asks.
+tmux, scheduler, or Python jobs, then exit. In normal low-API mode, the next
+planning call should happen after the batch finishes or when the user explicitly
+asks. If a supplemental context file exists, the supervisor has intentionally
+allowed a limited extra planning call while other jobs are still active.
 
 Read:
 

@@ -24,11 +24,11 @@ def add(findings: list[Finding], severity: str, check: str, message: str) -> Non
     findings.append(Finding(severity, check, message))
 
 
-def read(path: Path) -> str:
+def read(path: Path, default: str = "") -> str:
     try:
         return path.read_text(encoding="utf-8").strip()
     except FileNotFoundError:
-        return ""
+        return default
 
 
 def check_modes(findings: list[Finding], config: dict) -> None:
@@ -37,9 +37,9 @@ def check_modes(findings: list[Finding], config: dict) -> None:
     execution_modes = set(modes.get("execution_modes", []))
     batch_profiles = set((modes.get("batch_profiles") or {}).keys())
 
-    agent_mode = read(state_file("AGENT_MODE"))
-    execution_mode = read(state_file("EXECUTION_MODE"))
-    batch_profile = read(state_file("BATCH_PROFILE")) or modes.get("default_batch_profile", "auto")
+    agent_mode = read(state_file("AGENT_MODE"), modes.get("default_agent_mode", ""))
+    execution_mode = read(state_file("EXECUTION_MODE"), modes.get("default_execution_mode", ""))
+    batch_profile = read(state_file("BATCH_PROFILE"), modes.get("default_batch_profile", "auto"))
 
     if agent_modes and agent_mode not in agent_modes:
         add(findings, "ERROR", "mode", f"invalid AGENT_MODE={agent_mode!r}")

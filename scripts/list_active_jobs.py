@@ -110,6 +110,8 @@ def collect_jobs(config: dict) -> list[ActiveJob]:
         pid, ppid, stat, elapsed, command = parsed
         if pid == os.getpid() or pid in seen:
             continue
+        if stat.startswith("Z"):
+            continue
         if hints and not any(hint in command for hint in hints):
             continue
         if any(pattern.search(command) for pattern in exclude):

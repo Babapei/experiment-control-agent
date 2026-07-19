@@ -34,13 +34,26 @@ while true; do
   [[ -f "$BASE_DIR/runtime/PAUSE" ]] && sleep "$CHECK_INTERVAL_SECONDS" && continue
 
   mode="$(cat "$BASE_DIR/runtime/EXECUTION_MODE" 2>/dev/null || echo event)"
-  if [[ "$mode" == "batch_low_api" ]]; then
-    log "EXECUTION_MODE=batch_low_api detected; handing off."
-    exec "$BASE_DIR/scripts/batch_low_api_loop.sh"
-  elif [[ "$mode" == "manual" ]]; then
-    sleep "$CHECK_INTERVAL_SECONDS"
-    continue
-  fi
+  case "$mode" in
+    event)
+      ;;
+    interval)
+      log "EXECUTION_MODE=interval detected; handing off."
+      exec "$BASE_DIR/scripts/agent_loop.sh"
+      ;;
+    batch_low_api)
+      log "EXECUTION_MODE=batch_low_api detected; handing off."
+      exec "$BASE_DIR/scripts/batch_low_api_loop.sh"
+      ;;
+    manual)
+      sleep "$CHECK_INTERVAL_SECONDS"
+      continue
+      ;;
+    *)
+      log "unsupported EXECUTION_MODE=$mode; exiting."
+      exit 1
+      ;;
+  esac
 
   now="$(date '+%s')"
   current_sig="$("$PYTHON_BIN" "$BASE_DIR/scripts/compute_signature.py")"

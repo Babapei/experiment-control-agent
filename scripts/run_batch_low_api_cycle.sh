@@ -43,6 +43,19 @@ if [[ -n "$conda_env" ]]; then
   conda activate "$conda_env"
 fi
 
+extra_paths="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.extra_path_entries '[]')"
+"$PYTHON_BIN" - "$extra_paths" <<'PY' > "$BASE_DIR/runtime/.extra_path_exports"
+import json
+import sys
+items = json.loads(sys.argv[1]) if sys.argv[1] else []
+for item in items:
+    print(item)
+PY
+while IFS= read -r path_entry; do
+  [[ -n "$path_entry" ]] && export PATH="$PATH:$path_entry"
+done < "$BASE_DIR/runtime/.extra_path_exports"
+rm -f "$BASE_DIR/runtime/.extra_path_exports"
+
 auth_required="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.auth_required true)"
 if [[ "$auth_required" == "true" && ! -f "$CODEX_HOME/auth.json" ]]; then
   echo "[run_batch_low_api_cycle] missing Codex auth at $CODEX_HOME/auth.json" | tee -a "$BASE_DIR/logs/batch_low_api_runner.log"

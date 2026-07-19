@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 from agent_core.config import get_value, load_config, resolve_path, root
 from scripts.compute_signature import command_lines
-from scripts.list_active_jobs import parse_elapsed, parse_ps_line
+from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
 from scripts.render_prompt import render_context
 
 
@@ -49,6 +49,24 @@ class ProcessParsingTests(unittest.TestCase):
         self.assertEqual(parsed[0], 123)
         self.assertEqual(parsed[3], 5)
         self.assertIn("train.py", parsed[4])
+
+    def test_collect_jobs_ignores_zombies(self) -> None:
+        import scripts.list_active_jobs as list_active_jobs
+
+        original = list_active_jobs.run_ps
+        list_active_jobs.run_ps = lambda: ["123 1 Z 10 /repo/train.py --x"]
+        try:
+            jobs = collect_jobs(
+                {
+                    "job_detection": {
+                        "managed_hints": ["/repo"],
+                        "patterns": [{"category": "training", "regex": "train\\.py"}],
+                    }
+                }
+            )
+        finally:
+            list_active_jobs.run_ps = original
+        self.assertEqual(jobs, [])
 
 
 class SignatureTests(unittest.TestCase):
@@ -110,6 +128,19 @@ class ScriptSmokeTests(unittest.TestCase):
             payload = json.loads((output_dir / "completed.json").read_text(encoding="utf-8"))
             self.assertEqual(payload["task_id"], "unit-test")
             self.assertEqual(payload["status"], "completed")
+
+    def test_validate_state_passes_without_runtime_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            import scripts.validate_agent_state as validate_agent_state
+
+            original = validate_agent_state.state_file
+            validate_agent_state.state_file = lambda name: Path(tmpdir) / name
+            try:
+                findings = []
+                validate_agent_state.check_modes(findings, load_config())
+            finally:
+                validate_agent_state.state_file = original
+        self.assertFalse([item for item in findings if item.severity == "ERROR"])
 
 
 if __name__ == "__main__":
