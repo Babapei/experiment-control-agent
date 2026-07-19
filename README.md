@@ -44,6 +44,7 @@ scripts/launch_tmux_agent.sh
 - `templates/`: reusable status, lane, batch, and dashboard templates.
 - `runtime/`: local mutable state. Keep it out of git.
 - `logs/`: Codex runner/supervisor logs. Keep it out of git.
+- `ROADMAP.md`: implementation scope and phase plan.
 
 ## Checks
 
@@ -53,6 +54,19 @@ scripts/run_checks.sh
 
 This runs shell syntax checks, Python compilation, unit tests, doctor checks,
 runtime validation, and prompt rendering smoke tests.
+
+## Public Release
+
+Before pushing to a public GitHub repository:
+
+```bash
+scripts/run_checks.sh
+python3 scripts/doctor.py --strict
+git status --short
+```
+
+Do not commit `configs/project.json` if it contains private paths, API provider
+data, or unpublished project details.
 
 ## Execution Modes
 
