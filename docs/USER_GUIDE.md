@@ -43,7 +43,6 @@ that code in bounded cycles.
 | Configure your own project | `docs/CONFIG_REFERENCE.md` and `docs/PROFILE_AUTHORING.md` |
 | Debug local/server behavior | `docs/TROUBLESHOOTING.md` |
 | Understand internals before modifying core scripts | `docs/ARCHITECTURE.md` |
-| Audit or improve the agent core design | `docs/CORE_DESIGN_AUDIT.md` |
 | Prepare a public fork or release | `docs/PUBLISHING.md` and `SECURITY.md` |
 
 ## What A User Configures
