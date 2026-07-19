@@ -68,7 +68,7 @@ TEXT_LOG="$BASE_DIR/logs/cycle_${STAMP}.last_message.txt"
 CYCLE_TIMEOUT_SECONDS="${CYCLE_TIMEOUT_SECONDS:-$("$PYTHON_BIN" "$CONFIG_VALUE" supervisor.cycle_timeout_seconds 1800)}"
 
 set +e
-cat "$BASE_DIR/prompts/cycle_prompt.md" | \
+"$PYTHON_BIN" "$BASE_DIR/scripts/render_prompt.py" cycle | \
   timeout "$CYCLE_TIMEOUT_SECONDS" \
     codex exec \
       --skip-git-repo-check \

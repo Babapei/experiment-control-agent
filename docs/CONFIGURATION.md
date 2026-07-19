@@ -20,6 +20,14 @@ Important sections:
 - `batch.manifest_columns`: required columns for low-API batch manifests.
 - `project_docs`: project-specific policy and reference files.
 
+Prompt rendering uses these fields on every Codex call. Check the rendered
+prompt with:
+
+```bash
+python3 scripts/render_prompt.py cycle
+python3 scripts/render_prompt.py batch_low_api
+```
+
 ## Inspection And Doctor
 
 Print the resolved config:

@@ -124,7 +124,7 @@ is_transient_codex_failure() {
 }
 
 set +e
-cat "$BASE_DIR/prompts/batch_low_api_cycle_prompt.md" | \
+"$PYTHON_BIN" "$BASE_DIR/scripts/render_prompt.py" batch_low_api | \
   timeout "$CYCLE_TIMEOUT_SECONDS" \
     codex exec \
       "${CODEX_EXEC_OVERRIDES[@]}" \

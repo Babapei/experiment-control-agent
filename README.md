@@ -40,6 +40,7 @@ scripts/launch_tmux_agent.sh
 - `configs/project.example.json`: machine/project configuration template.
 - `profiles/default/`: runnable generic placeholder profile.
 - `profiles/`: optional example project profiles.
+- `templates/`: reusable status, lane, batch, and dashboard templates.
 - `runtime/`: local mutable state. Keep it out of git.
 - `logs/`: Codex runner/supervisor logs. Keep it out of git.
 
@@ -60,3 +61,11 @@ scripts/launch_tmux_agent.sh
   records, and later analyzes.
 - Never overwrite experiment evidence by default.
 - Prefer explicit batch manifests over implicit memory.
+
+## Prompt Rendering
+
+`run_codex_cycle.sh` and `run_batch_low_api_cycle.sh` call
+`scripts/render_prompt.py` before invoking `codex exec`. The rendered prompt
+prepends the resolved config path, project docs, active modes, batch profile
+settings, and manifest schema. This keeps project-specific policy in profiles
+while making each Codex call self-describing.
