@@ -1,7 +1,7 @@
 # User Guide
 
 This guide explains how to understand the repository and which document to read
-next. It is the best starting point after the README.
+next. It is the best starting point after the toy demo works.
 
 ## Mental Model
 
@@ -33,6 +33,17 @@ Experiment Control Agent has three layers:
 
 The agent does not replace your experiment code. It helps an LLM planner manage
 that code in bounded cycles.
+
+## Documentation Map
+
+| Need | Read |
+| --- | --- |
+| Prove the install works | `docs/GETTING_STARTED.md` |
+| Understand what this agent can and cannot do | this guide, then `docs/FEATURES_AND_MODES.md` |
+| Configure your own project | `docs/CONFIG_REFERENCE.md` and `docs/PROFILE_AUTHORING.md` |
+| Debug local/server behavior | `docs/TROUBLESHOOTING.md` |
+| Understand internals before modifying core scripts | `docs/ARCHITECTURE.md` |
+| Prepare a public fork or release | `docs/PUBLISHING.md` and `SECURITY.md` |
 
 ## What A User Configures
 
@@ -99,39 +110,6 @@ the long-running supervisor until one manual batch produces sensible evidence.
 
 After job detection and result signatures are reliable, use `batch_low_api` for
 normal server work.
-
-## Recommended Reading Paths
-
-### I Just Want To See It Work
-
-1. Read `README.md`.
-2. Follow `docs/GETTING_STARTED.md`.
-3. Run `examples/toy-sleep-experiment`.
-4. Inspect `runtime/current_status.md`, `runtime/research_lanes.md`, and
-   `runtime/batch_low_api/current_batch.md`.
-
-### I Want To Use This For My Project
-
-1. Read `docs/GETTING_STARTED.md`.
-2. Read `docs/FEATURES_AND_MODES.md`.
-3. Read `docs/PROFILE_AUTHORING.md`.
-4. Use `docs/CONFIG_REFERENCE.md` while editing `configs/project.json`.
-5. Run `python3 scripts/doctor.py`.
-
-### I Need To Debug Something
-
-1. Run `scripts/show_runtime_status.sh`.
-2. Run `scripts/list_active_jobs.py --json`.
-3. Run `python3 scripts/compute_signature.py`.
-4. Read `docs/TROUBLESHOOTING.md`.
-5. Inspect `logs/` and `runtime/*supervisor/state`.
-
-### I Want To Understand The Internals
-
-1. Read `docs/ARCHITECTURE.md`.
-2. Read `scripts/batch_low_api_loop.sh`.
-3. Read `scripts/run_batch_low_api_cycle.sh`.
-4. Read `scripts/render_prompt.py`.
 
 ## Setup Checklist For A Real Project
 
@@ -205,9 +183,9 @@ Use `batch_low_api` as the default server mode for long experiments.
 
 Use `event` only when you are comfortable with more frequent planning calls.
 
-## What Users Should Understand Before Unattended Runs
+## Ready For Unattended Runs
 
-Before leaving the agent running, a user should be able to answer:
+Before leaving the agent running, confirm:
 
 - Which directories can the agent modify?
 - Which commands can it launch?
@@ -219,6 +197,15 @@ Before leaving the agent running, a user should be able to answer:
 
 If any answer is unclear, keep the project in `manual` mode and improve the
 profile/config first.
+
+Also check the actual context sent to the planner:
+
+```bash
+python3 scripts/render_prompt.py batch_low_api | sed -n '1,200p'
+```
+
+The prompt should be specific enough that a teammate could predict the next
+safe action from the same information.
 
 ## What To Inspect After A Batch
 

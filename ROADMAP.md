@@ -1,8 +1,8 @@
 # Roadmap
 
-This roadmap is the implementation contract for turning the extracted scaffold
-into a public, reusable LLM experiment-control agent. Keep core behavior generic. Put
-project-specific research knowledge into profiles.
+This roadmap records the current public shape of the extracted scaffold and the
+remaining hardening ideas for a reusable LLM experiment-control agent. Keep core
+behavior generic. Put project-specific research knowledge into profiles.
 
 ## Final Shape
 
@@ -51,58 +51,53 @@ machine-specific project state.
 - lane/dashboard templates
 - private reference docs
 
-## Implementation Phases
+## Completed Extraction Phases
 
 ### Phase 1: Planning And Scope Lock
 
-- Add this roadmap.
-- Add a concise architecture document.
-- Keep the existing project-specific agent untouched.
-- Commit the planning/scope files.
+- Roadmap and architecture boundary added.
+- Existing project-specific agent kept untouched.
+- Planning/scope files committed.
 
 ### Phase 2: Configuration Hardening
 
-- Add a first-class config inspection command.
-- Validate configured paths, mode defaults, batch profiles, manifest columns,
-  job regexes, and project doc references.
-- Add a `doctor` command for publish-safe preflight checks.
-- Improve bootstrap output and setup ergonomics.
-- Commit config/tooling changes.
+- First-class config inspection command added.
+- Validation added for configured paths, mode defaults, batch profiles,
+  manifest columns, job regexes, and project doc references.
+- `doctor` command added for publish-safe preflight checks.
+- Bootstrap output and setup ergonomics improved.
 
 ### Phase 3: Low-API Supervisor Completeness
 
-- Reintroduce configurable retry/backoff for temporary Codex failures.
-- Reintroduce model/reasoning fallback profiles through config.
-- Reintroduce optional supplemental cycles for idle resources while long jobs
+- Configurable retry/backoff added for temporary planning-provider failures.
+- Model/reasoning fallback profiles added through config.
+- Optional supplemental cycles added for idle resources while long jobs
   are still active.
-- Keep all thresholds project-configurable.
-- Commit supervisor changes.
+- All thresholds kept project-configurable.
 
 ### Phase 4: Prompt/Profile System
 
-- Make prompts explicitly render or reference configured project docs.
-- Add a complete generic default profile.
-- Keep the E+A/SBM profile sanitized and clearly marked as an example.
-- Add templates for status, lane ledger, batch plan, and target dashboard.
-- Commit prompt/profile changes.
+- Prompts explicitly render configured project docs.
+- Generic default profile added.
+- E+A/SBM profile kept sanitized and clearly marked as an example.
+- Templates added for status, lane ledger, batch plan, and target dashboard.
 
 ### Phase 5: Tests And Compatibility
 
-- Add unit tests for config loading, job detection, signature calculation, and
+- Unit tests added for config loading, job detection, signature calculation, and
   validation.
-- Add shell syntax checks.
-- Test on macOS and Linux server shells.
-- Avoid hard dependencies on `tmux`, `nvidia-smi`, or conda when not configured.
-- Commit tests.
+- Shell syntax checks added.
+- Tested on macOS and Linux server shells.
+- Hard dependencies on `tmux`, `nvidia-smi`, or conda avoided when not
+  configured.
 
 ### Phase 6: Release Preparation
 
-- Add license placeholder or selected license.
-- Add GitHub-oriented README sections.
-- Add security/publishing checklist.
-- Add example `project.json` variants for common setups.
-- Sync to the server new directory and run validation.
-- Commit release docs.
+- MIT license added.
+- GitHub-oriented README sections added.
+- Security/publishing checklist added.
+- Toy example and sanitized profile examples added.
+- Server sync and validation completed.
 
 ## Non-Goals For The Public Core
 
@@ -119,19 +114,7 @@ machine-specific project state.
 Make small commits at phase boundaries or after a cohesive feature is verified.
 Each commit should keep the repository runnable.
 
-## Current Progress
-
-Baseline extraction completed:
-
-- Phase 1 complete: roadmap and architecture boundary committed.
-- Phase 2 complete: default profile, config inspection, and doctor committed.
-- Phase 3 complete: configurable retry, fallback, and supplemental low-API
-  cycles committed.
-- Phase 4 complete: rendered prompts and generic templates committed.
-- Phase 5 complete: local check suite and unit tests committed.
-- Phase 6 complete: release/profile/security docs and MIT license committed.
-
-Remaining optional hardening before a public v1 tag:
+## Optional Hardening Before A Public v1 Tag
 
 - Add CI configuration after the GitHub repository exists.
 - Decide whether MIT is the final license.

@@ -5,7 +5,7 @@ profile before running real experiments.
 
 ## Mission
 
-Manage long-running experiments with bounded Codex planning cycles. The agent
+Manage long-running experiments with bounded LLM planning cycles. The agent
 should inspect state, launch documented non-conflicting work, update ledgers,
 and exit.
 
@@ -26,4 +26,3 @@ Projects may replace this vocabulary. A useful default set is:
 - `completed`: evidence is available.
 - `failed`: the exact package failed.
 - `blocked`: no safe local next action exists.
-

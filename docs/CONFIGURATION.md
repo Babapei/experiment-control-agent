@@ -24,6 +24,18 @@ Important sections:
 For a field-by-field reference, see `docs/CONFIG_REFERENCE.md`.
 For mode behavior and feature explanations, see `docs/FEATURES_AND_MODES.md`.
 
+## Configuration Order
+
+For a new project, configure in this order:
+
+1. `workspaces` and `originals`, so write boundaries are clear.
+2. `project_docs`, so the rendered prompt contains project policy.
+3. `job_detection`, so active jobs are not missed or overcounted.
+4. `results`, so supervisors wake on meaningful artifacts.
+5. `modes` and `batch`, so unattended behavior matches your budget.
+6. `codex`, so the current planning-provider implementation can authenticate
+   and run in the right environment.
+
 Prompt rendering uses these fields on every planning-provider call. Check the
 rendered prompt with:
 

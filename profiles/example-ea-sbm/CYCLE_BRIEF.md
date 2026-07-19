@@ -1,6 +1,6 @@
 # Example Cycle Brief
 
-This file is the compact context a Codex cycle should read before targeted
+This file is the compact context a planning cycle should read before targeted
 lookup in longer project references.
 
 ## Mission
@@ -33,4 +33,3 @@ does not close the manuscript row unless the profile says it does.
 - Append journal entry.
 - Update lane ledger.
 - State the next action.
-

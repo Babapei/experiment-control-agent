@@ -2,6 +2,18 @@
 
 This document explains what the agent can do and how to choose a mode.
 
+## Quick Choice
+
+| Situation | Use |
+| --- | --- |
+| First setup, debugging, or no automatic API calls | `manual` |
+| Long-running GPU/server jobs with limited API budget | `batch_low_api` |
+| Predictable periodic checks | `interval` |
+| Fast reaction to reliable result changes | `event` |
+
+If you are unsure, start in `manual`, render the prompt, run one controlled
+`batch_low_api` cycle by hand, and only then start a supervisor.
+
 ## Capability Summary
 
 Experiment Control Agent is useful for projects where experiments are ordinary
@@ -346,12 +358,14 @@ rm -f runtime/PAUSE
 scripts/launch_tmux_agent.sh
 ```
 
-## Choosing A Mode
+## Mode Selection Checks
 
-| Need | Recommended Mode |
-| --- | --- |
-| First setup or debugging | `manual` |
-| Long GPU jobs, quota matters | `batch_low_api` |
-| Predictable periodic planning | `interval` |
-| Fast reaction to result changes | `event` |
-| No automatic API calls | `manual` + `PAUSE` |
+Before switching out of `manual`, confirm:
+
+- `python3 scripts/doctor.py` reports no errors.
+- `scripts/list_active_jobs.py --json` classifies your jobs correctly.
+- `python3 scripts/compute_signature.py` changes only for meaningful results.
+- `python3 scripts/render_prompt.py batch_low_api` contains the right policy,
+  workspaces, metrics, and safety boundaries.
+- `runtime/PAUSE` is absent only when you intentionally want supervisors to
+  start new planning cycles.

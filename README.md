@@ -62,25 +62,27 @@ Full walkthrough: [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md).
 
 ## Documentation
 
-- [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md): how to understand the repository
-  and which document to read next. Start here if you are adapting the agent to
-  a new project.
-- [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md): clone, checks, toy demo,
-  and first real project setup.
-- [`docs/FEATURES_AND_MODES.md`](docs/FEATURES_AND_MODES.md): feature overview,
-  mode selection, retry/fallback, supplemental cycles, pause/stop.
-- [`docs/CONFIG_REFERENCE.md`](docs/CONFIG_REFERENCE.md): every
-  `configs/project.json` section and field.
-- [`docs/PROFILE_AUTHORING.md`](docs/PROFILE_AUTHORING.md): how to write a
-  project profile.
+You do not need to read every file before trying the agent.
+
+Recommended first path:
+
+1. [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md): run the toy demo.
+2. [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md): understand how to adapt it.
+3. [`docs/FEATURES_AND_MODES.md`](docs/FEATURES_AND_MODES.md): choose a mode.
+4. [`docs/CONFIG_REFERENCE.md`](docs/CONFIG_REFERENCE.md): edit fields safely.
+5. [`docs/PROFILE_AUTHORING.md`](docs/PROFILE_AUTHORING.md): write project
+   policy and cycle context.
+
+Use these when needed:
+
 - [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md): common warnings and
   failure modes.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): control flow and runtime
   state model.
-- [`docs/AUTH_SETUP.md`](docs/AUTH_SETUP.md): Codex CLI authentication.
-- [`docs/PUBLISHING.md`](docs/PUBLISHING.md): public release checklist.
-- [`SECURITY.md`](SECURITY.md): sensitive-file guidance.
-- [`ROADMAP.md`](ROADMAP.md): implementation phases and future work.
+- [`docs/AUTH_SETUP.md`](docs/AUTH_SETUP.md): current Codex CLI provider setup.
+- [`docs/PUBLISHING.md`](docs/PUBLISHING.md) and [`SECURITY.md`](SECURITY.md):
+  public release and sensitive-file checks.
+- [`ROADMAP.md`](ROADMAP.md): current status and future hardening ideas.
 
 ## Repository Layout
 

@@ -1,4 +1,8 @@
-# Codex Authentication
+# Codex Provider Authentication
+
+The public control plane is designed around a generic planning-provider
+boundary. The current implementation invokes Codex CLI through `codex exec`, so
+authentication is configured with Codex settings.
 
 The scripts use `codex.home` from `configs/project.json`; by default this is
 `.codex-home` under the repo root.
@@ -20,4 +24,3 @@ scripts/configure_proxy_provider.sh
 
 This writes `.codex-home/config.toml` and then runs `codex login --with-api-key`.
 Do not commit `.codex-home/`.
-
