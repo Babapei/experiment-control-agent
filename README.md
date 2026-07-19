@@ -23,6 +23,7 @@ $EDITOR configs/project.json
 
 python3 scripts/bootstrap_layout.py
 python3 scripts/doctor.py
+scripts/run_checks.sh
 scripts/show_runtime_status.sh
 
 scripts/set_mode.sh agent target_recovery
@@ -43,6 +44,15 @@ scripts/launch_tmux_agent.sh
 - `templates/`: reusable status, lane, batch, and dashboard templates.
 - `runtime/`: local mutable state. Keep it out of git.
 - `logs/`: Codex runner/supervisor logs. Keep it out of git.
+
+## Checks
+
+```bash
+scripts/run_checks.sh
+```
+
+This runs shell syntax checks, Python compilation, unit tests, doctor checks,
+runtime validation, and prompt rendering smoke tests.
 
 ## Execution Modes
 
