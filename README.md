@@ -15,12 +15,26 @@ meaningful boundary before spending more API calls.
 - A profile-driven way to separate project policy from generic supervisors.
 - A runtime ledger system for batches, status, and evidence paths.
 
+Use it when you already have experiment scripts and want a cautious LLM planner
+to decide what to run next, track evidence, and avoid spending API calls while
+jobs are still running.
+
 ## What This Is Not
 
 - A training framework.
 - A replacement for your experiment scripts.
 - A domain-specific paper-recovery agent.
 - A place to store datasets, checkpoints, logs, credentials, or private notes.
+
+## First Decisions
+
+| Question | Recommended Choice |
+| --- | --- |
+| Do you just want to see the repository work? | Run the toy example. |
+| Are you configuring a real project for the first time? | Use `manual` mode. |
+| Are your jobs long-running and expensive? | Use `batch_low_api`. |
+| Do you need fast reaction to state changes? | Use `event` after setup is stable. |
+| Do you need zero automatic API calls? | Use `manual` and keep `runtime/PAUSE` present. |
 
 ## Start Here
 
@@ -48,8 +62,13 @@ Full walkthrough: [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md).
 
 ## Documentation
 
+- [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md): how to understand the repository
+  and which document to read next. Start here if you are adapting the agent to
+  a new project.
 - [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md): clone, checks, toy demo,
   and first real project setup.
+- [`docs/FEATURES_AND_MODES.md`](docs/FEATURES_AND_MODES.md): feature overview,
+  mode selection, retry/fallback, supplemental cycles, pause/stop.
 - [`docs/CONFIG_REFERENCE.md`](docs/CONFIG_REFERENCE.md): every
   `configs/project.json` section and field.
 - [`docs/PROFILE_AUTHORING.md`](docs/PROFILE_AUTHORING.md): how to write a

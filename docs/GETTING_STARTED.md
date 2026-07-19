@@ -113,3 +113,9 @@ scripts/launch_tmux_agent.sh
 Training jobs launched by the agent run as ordinary processes. Codex/LLM calls
 happen only at planning boundaries.
 
+## 6. Read Next
+
+- `docs/USER_GUIDE.md`: choose the right documentation path for your use case.
+- `docs/FEATURES_AND_MODES.md`: understand capabilities and execution modes.
+- `docs/CONFIG_REFERENCE.md`: edit `configs/project.json` correctly.
+- `docs/PROFILE_AUTHORING.md`: write a strong project profile.
