@@ -4,6 +4,7 @@ runtime/
 workspaces/
 originals/
 archive/
+.agent-internal/
 
 .env
 .env.*
