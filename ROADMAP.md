@@ -119,3 +119,23 @@ machine-specific project state.
 Make small commits at phase boundaries or after a cohesive feature is verified.
 Each commit should keep the repository runnable.
 
+## Current Progress
+
+Baseline extraction completed:
+
+- Phase 1 complete: roadmap and architecture boundary committed.
+- Phase 2 complete: default profile, config inspection, and doctor committed.
+- Phase 3 complete: configurable retry, fallback, and supplemental low-API
+  cycles committed.
+- Phase 4 complete: rendered prompts and generic templates committed.
+- Phase 5 complete: local check suite and unit tests committed.
+- Phase 6 complete: release/profile/security docs and MIT license committed.
+
+Remaining optional hardening before a public v1 tag:
+
+- Add CI configuration after the GitHub repository exists.
+- Decide whether MIT is the final license.
+- Add richer real-world sanitized example profiles if desired.
+- Add scheduler adapters such as Slurm/PBS if users need them.
+- Add a small CLI wrapper command if the shell/Python script surface feels too
+  fragmented.
