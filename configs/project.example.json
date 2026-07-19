@@ -1,6 +1,6 @@
 {
   "project": {
-    "name": "example-experiment-agent",
+    "name": "example-experiment-control-agent",
     "description": "Replace this with your project objective.",
     "control_root": "."
   },
@@ -21,7 +21,7 @@
     "disable_response_storage": true
   },
   "supervisor": {
-    "session_name": "codex-experiment-agent",
+    "session_name": "experiment-control-agent",
     "check_interval_seconds": 900,
     "heartbeat_seconds": 3600,
     "min_cycle_gap_seconds": 3600,

@@ -1,7 +1,7 @@
 # Roadmap
 
 This roadmap is the implementation contract for turning the extracted scaffold
-into a public, reusable Codex experiment agent. Keep core behavior generic. Put
+into a public, reusable LLM experiment-control agent. Keep core behavior generic. Put
 project-specific research knowledge into profiles.
 
 ## Final Shape
@@ -12,7 +12,7 @@ The repository should be usable by another researcher who can:
 2. Copy `configs/project.example.json` to `configs/project.json`.
 3. Define workspaces, environment activation, managed job patterns, watched
    result files, metrics, and project docs.
-4. Authenticate Codex.
+4. Authenticate the configured LLM provider.
 5. Run manual, interval, event, or low-API batch supervision without editing
    core scripts.
 
@@ -25,7 +25,7 @@ machine-specific project state.
 ### Core
 
 - process supervisors
-- Codex invocation
+- LLM invocation through the configured provider
 - pause/stop state
 - mode switching
 - low-API batch state

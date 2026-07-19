@@ -1,8 +1,9 @@
 # Architecture
 
-Codex Experiment Agent is a control plane around long-running experiments. It
-does not train models itself. It asks Codex to perform bounded planning cycles,
-then launches ordinary shell, Python, tmux, or scheduler jobs.
+Experiment Control Agent is a control plane around long-running experiments. It
+does not train models itself. It asks an LLM planner to perform bounded planning
+cycles, then launches ordinary shell, Python, tmux, or scheduler jobs. The first
+provider implementation uses `codex exec`.
 
 ## Control Flow
 
@@ -17,9 +18,9 @@ launch_tmux_agent.sh
 ## Runtime State
 
 - `runtime/AGENT_MODE`: project objective mode.
-- `runtime/EXECUTION_MODE`: Codex call cadence.
+- `runtime/EXECUTION_MODE`: LLM planning-call cadence.
 - `runtime/BATCH_PROFILE`: low-API batch depth target.
-- `runtime/PAUSE`: supervisors should not start new Codex cycles.
+- `runtime/PAUSE`: supervisors should not start new planning cycles.
 - `runtime/STOP`: supervisors should exit.
 - `runtime/batch_low_api/current_batch.md`: pointer to the latest batch plan.
 - `runtime/batch_low_api/usage_log.tsv`: token usage history.
@@ -54,4 +55,3 @@ Private project profile:
 - exact metrics
 - private result ledgers
 - unpublished notes
-

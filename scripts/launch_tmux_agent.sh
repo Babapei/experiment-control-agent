@@ -4,7 +4,7 @@ set -euo pipefail
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 export PYTHONPATH="$BASE_DIR:${PYTHONPATH:-}"
-SESSION_NAME="${1:-$("$PYTHON_BIN" "$BASE_DIR/scripts/config_value.py" supervisor.session_name codex-experiment-agent)}"
+SESSION_NAME="${1:-$("$PYTHON_BIN" "$BASE_DIR/scripts/config_value.py" supervisor.session_name experiment-control-agent)}"
 
 mode="${EXECUTION_MODE:-$(cat "$BASE_DIR/runtime/EXECUTION_MODE" 2>/dev/null || "$PYTHON_BIN" "$BASE_DIR/scripts/config_value.py" modes.default_execution_mode manual)}"
 

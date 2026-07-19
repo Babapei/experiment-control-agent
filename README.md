@@ -1,13 +1,14 @@
-# Codex Experiment Agent
+# Experiment Control Agent
 
-A reusable server-side scaffold for running bounded Codex planning cycles around
-long-running experiments.
+A configurable server-side LLM control plane for planning, launching, and
+monitoring long-running research experiments.
 
 The agent is intentionally split into two parts:
 
 - **Core control layer**: tmux supervisors, pause/stop state, batch planning,
-  Codex invocation, usage logs, active-job detection, and result-change
-  signatures.
+  LLM invocation, usage logs, active-job detection, and result-change
+  signatures. The current implementation uses `codex exec` as its first
+  provider.
 - **Project profile**: research objective, workspaces, environment activation,
   managed job patterns, watched result files, metric policy, lane templates, and
   safety rules.
@@ -70,18 +71,18 @@ data, or unpublished project details.
 
 ## Execution Modes
 
-- `event`: run a Codex cycle when jobs/results/tmux state change or on a
+- `event`: run an LLM planning cycle when jobs/results/tmux state change or on a
   heartbeat.
-- `interval`: run Codex on a fixed interval.
-- `batch_low_api`: run Codex only at batch boundaries; training runs without
-  further Codex calls.
+- `interval`: run an LLM planning cycle on a fixed interval.
+- `batch_low_api`: run the LLM only at batch boundaries; training runs without
+  further LLM calls.
 - `manual`: no automatic supervisor; invoke a cycle by hand.
 
 ## Design Principles
 
 - Keep the core generic and conservative.
 - Put domain decisions in the project profile, not in shell/Python supervisors.
-- Treat long-running training as ordinary processes. Codex plans, launches,
+- Treat long-running training as ordinary processes. The LLM plans, launches,
   records, and later analyzes.
 - Never overwrite experiment evidence by default.
 - Prefer explicit batch manifests over implicit memory.
@@ -92,4 +93,4 @@ data, or unpublished project details.
 `scripts/render_prompt.py` before invoking `codex exec`. The rendered prompt
 prepends the resolved config path, project docs, active modes, batch profile
 settings, and manifest schema. This keeps project-specific policy in profiles
-while making each Codex call self-describing.
+while making each planning call self-describing.
