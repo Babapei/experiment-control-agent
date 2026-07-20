@@ -41,10 +41,13 @@ experiment means.
 Do not add an `AGENT_MODE` only because the name sounds useful. A good mode
 contract says what the planner must do differently in that mode.
 
-For example, an audit mode should say which uncertainty it reduces, what audit
-artifact it must produce, and what evidence promotes a probe into a larger run.
-A target-recovery mode should say how targets are ranked, what counts as a
-concrete push, and when a failed candidate leaves the target open.
+For example, a method-exploration mode should say what kind of research
+hypothesis it may propose, what counts as a cheap validation signal, and when a
+candidate should be promoted, revised, or rejected. An audit-validation mode
+should say which uncertainty it reduces, what audit artifact it must produce,
+and what evidence promotes a route into a larger run. A target-recovery mode
+should say how targets are ranked, what counts as a concrete push, and when a
+failed candidate leaves the target open.
 
 ## Job Detection Tips
 

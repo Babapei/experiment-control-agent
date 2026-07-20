@@ -11,8 +11,15 @@ and exit.
 
 ## Objective Modes
 
-Objective modes are configured as contracts in `configs/project.json`. Do not
-add a mode unless its purpose, required artifacts, success criteria, and
+Objective modes are configured as contracts in `configs/project.json`. The
+default lifecycle is:
+
+- `method_exploration`: propose and test early candidate methods.
+- `audit_validation`: validate data, metrics, runners, provenance, or safety
+  assumptions before promotion.
+- `target_recovery`: push predefined targets with reproducible evidence.
+
+Do not add a mode unless its purpose, required artifacts, success criteria, and
 escalation criteria are clear enough for unattended planning.
 
 ## Safety Rules

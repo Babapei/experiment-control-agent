@@ -9,6 +9,7 @@
   "actions": [],
   "artifacts": [],
   "evidence_paths": [],
+  "mode_details": {},
   "success_criterion_met": "",
   "escalation_criterion_used": "",
   "next_decision": "",

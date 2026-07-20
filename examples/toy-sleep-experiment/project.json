@@ -30,14 +30,14 @@
     "retry_max_seconds": 60
   },
   "modes": {
-    "agent_modes": ["audit_exploration", "target_recovery"],
-    "default_agent_mode": "audit_exploration",
+    "agent_modes": ["method_exploration", "audit_validation", "target_recovery"],
+    "default_agent_mode": "method_exploration",
     "agent_mode_contracts": {
-      "audit_exploration": {
-        "purpose": "Inspect toy runtime behavior without launching LLM calls.",
+      "method_exploration": {
+        "purpose": "Demonstrate early-stage exploration with tiny CPU-only candidate tasks.",
         "entry_conditions": [
           "the user is learning the control plane",
-          "toy task behavior or result signatures need inspection"
+          "toy task behavior or result signatures need a safe small-scale demonstration"
         ],
         "required_reads": [
           "examples/toy-sleep-experiment/profile/CYCLE_BRIEF.md",
@@ -46,23 +46,61 @@
           "active toy jobs"
         ],
         "allowed_actions": [
+          "propose a tiny toy hypothesis",
           "run the toy batch script",
           "inspect completed.json files",
           "update toy status and journal files"
         ],
         "required_artifacts": [
+          "toy research question and hypothesis",
+          "toy validation design",
           "completed.json files from toy tasks",
           "runtime/current_status.md",
           "runtime/research_lanes.md"
         ],
         "success_criteria": [
-          "toy jobs launch and finish",
+          "a tiny candidate behavior is tested with evidence",
           "result signature changes after completion",
           "status files identify the generated outputs"
         ],
         "escalation_criteria": [
           "toy task script fails before writing completed.json",
           "job detection or result watch paths do not match the toy project"
+        ]
+      },
+      "audit_validation": {
+        "purpose": "Validate that toy job detection and completion artifacts are wired correctly.",
+        "entry_conditions": [
+          "toy processes are not detected as expected",
+          "completed.json files are missing or malformed",
+          "result signatures do not change after toy completion"
+        ],
+        "required_reads": [
+          "examples/toy-sleep-experiment/profile/CYCLE_BRIEF.md",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md",
+          "active toy jobs",
+          "toy completed.json files if present"
+        ],
+        "allowed_actions": [
+          "inspect toy process detection",
+          "inspect completed.json files",
+          "rerun bounded toy tasks if needed",
+          "update toy status and journal files"
+        ],
+        "required_artifacts": [
+          "uncertainty being validated",
+          "toy evidence path",
+          "verdict",
+          "promotion or follow-up criterion"
+        ],
+        "success_criteria": [
+          "one toy wiring uncertainty is resolved",
+          "the next safe action is clear"
+        ],
+        "escalation_criteria": [
+          "the toy task script fails before writing completed.json",
+          "the configured paths cannot be reconciled with generated outputs"
         ]
       },
       "target_recovery": {

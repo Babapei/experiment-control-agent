@@ -104,6 +104,46 @@ def check_evidence_paths(findings: list[Finding], evidence_paths: list[str]) -> 
             add(findings, "WARN", "cycle_outcome", f"evidence path does not exist: {path}")
 
 
+MODE_DETAIL_FIELDS = {
+    "method_exploration": (
+        "research_question",
+        "hypothesis",
+        "candidate_method",
+        "validation_design",
+        "evaluation_signal",
+        "decision",
+    ),
+    "audit_validation": (
+        "uncertainty",
+        "audit_action",
+        "evidence_path",
+        "verdict",
+        "promotion_or_followup",
+    ),
+    "target_recovery": (
+        "selected_target",
+        "hypothesis",
+        "output_root_or_evidence",
+        "target_state_update",
+        "decision_after_completion",
+    ),
+}
+
+
+def check_mode_details(findings: list[Finding], payload: dict[str, Any], agent_mode: str) -> None:
+    expected = MODE_DETAIL_FIELDS.get(agent_mode)
+    if expected is None:
+        return
+    details = payload.get("mode_details")
+    if not isinstance(details, dict):
+        add(findings, "ERROR", "cycle_outcome", f"mode_details must be an object for agent_mode={agent_mode!r}")
+        return
+    for field in expected:
+        value = details.get(field)
+        if not isinstance(value, str) or not value.strip():
+            add(findings, "ERROR", "cycle_outcome", f"mode_details.{field} must be a non-empty string for agent_mode={agent_mode!r}")
+
+
 def check_outcome(findings: list[Finding], config: dict[str, Any], payload: dict[str, Any]) -> None:
     modes = config.get("modes", {})
     default_agent_mode = modes.get("default_agent_mode", "")
@@ -137,6 +177,7 @@ def check_outcome(findings: list[Finding], config: dict[str, Any], payload: dict
         add(findings, "ERROR", "cycle_outcome", f"agent_mode {agent_mode!r} has no active contract")
     else:
         check_contract_reference(findings, payload, contract)
+    check_mode_details(findings, payload, agent_mode)
     check_evidence_paths(findings, evidence_paths)
 
 

@@ -197,6 +197,8 @@ Before leaving the agent running, confirm:
 - Where are logs and batch manifests written?
 - How do I pause or stop new planning cycles?
 - What API provider, model, and fallback settings are being used?
+- Does `runtime/last_cycle_outcome.json` contain the active mode's required
+  details after a manual cycle?
 
 If any answer is unclear, keep the project in `manual` mode and improve the
 profile/config first.

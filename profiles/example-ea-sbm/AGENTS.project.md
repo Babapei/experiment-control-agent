@@ -9,6 +9,11 @@ Recover and audit a set of already-written experiment-table rows for a machine
 learning paper. The core agent does not know what the rows mean; this profile
 defines the target rows, trusted rows, metrics, runners, and safety boundaries.
 
+Use `method_exploration` when the project needs new candidate routes before a
+row can be attacked directly. Use `audit_validation` when a route, metric, or
+artifact needs trust checks. Use `target_recovery` when the target row and
+acceptance criteria are already clear.
+
 ## Safety Boundaries
 
 - Treat `originals/*` as read-only.
@@ -37,4 +42,3 @@ variants.
 
 List preferred final runners and any helper runners here. For each experiment
 family, state which scripts/configs/data roots determine the result.
-

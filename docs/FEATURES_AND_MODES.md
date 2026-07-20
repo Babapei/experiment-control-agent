@@ -131,7 +131,8 @@ The agent uses separate mode files because they answer different questions.
 
 Examples:
 
-- `audit_exploration`
+- `method_exploration`
+- `audit_validation`
 - `target_recovery`
 
 These values are project-defined. Configure allowed values in
@@ -149,6 +150,23 @@ An agent mode is a contract, not just a label. Each mode should define:
 
 If a mode cannot define those fields clearly, it is not ready to be an
 unattended objective mode.
+
+The default public lifecycle is:
+
+- `method_exploration`: early-stage research automation. The planner proposes
+  candidate hypotheses or method changes, chooses a cheap validation design,
+  runs or prepares a bounded probe, records evidence, and decides whether to
+  promote, revise, reject, or continue the route.
+- `audit_validation`: trust-building work. The planner reduces one uncertainty
+  about data, metrics, runner behavior, provenance, leakage, comparability, or
+  safety before any route is promoted.
+- `target_recovery`: late-stage result work. The planner chooses a predefined
+  target, launches or evaluates documented result-bearing work, records
+  evidence, and keeps failed candidates separate from target closure.
+
+Every completed cycle should write `runtime/last_cycle_outcome.json`. The
+validator checks that the outcome names the active mode, records reads/actions,
+points to evidence, and includes mode-specific details.
 
 ### `EXECUTION_MODE`
 

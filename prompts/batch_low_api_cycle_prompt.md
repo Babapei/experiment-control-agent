@@ -60,5 +60,15 @@ performed, actions taken, artifacts/evidence created or inspected, exactly one
 satisfied success criterion or escalation criterion from the active mode
 contract, and the next decision.
 
+Populate `mode_details` according to the active mode:
+
+- `method_exploration`: `research_question`, `hypothesis`,
+  `candidate_method`, `validation_design`, `evaluation_signal`, `decision`.
+- `audit_validation`: `uncertainty`, `audit_action`, `evidence_path`,
+  `verdict`, `promotion_or_followup`.
+- `target_recovery`: `selected_target`, `hypothesis`,
+  `output_root_or_evidence`, `target_state_update`,
+  `decision_after_completion`.
+
 Final response: short operational summary including whether jobs were launched
 and the batch directory.

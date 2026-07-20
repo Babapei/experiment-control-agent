@@ -8,6 +8,11 @@ lookup in longer project references.
 Operate on a row-centric recovery queue for an ML paper. A failed candidate
 does not close the manuscript row unless the profile says it does.
 
+If the active mode is `method_exploration`, first formulate a bounded method
+hypothesis and a cheap validation signal. If the active mode is
+`audit_validation`, reduce one concrete uncertainty before promotion. If the
+active mode is `target_recovery`, choose the most useful open row or blocker.
+
 ## Required Reads
 
 1. `runtime/AGENT_MODE`

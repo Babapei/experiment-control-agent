@@ -35,7 +35,7 @@ def link_map(section: str, target_parent: str, config: dict) -> None:
 def init_state(config: dict) -> None:
     modes = config.get("modes", {})
     defaults = {
-        "AGENT_MODE": modes.get("default_agent_mode", "audit_exploration"),
+        "AGENT_MODE": modes.get("default_agent_mode", "method_exploration"),
         "EXECUTION_MODE": modes.get("default_execution_mode", "manual"),
         "BATCH_PROFILE": modes.get("default_batch_profile", "auto"),
     }

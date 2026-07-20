@@ -72,6 +72,17 @@ Each `agent_mode_contracts.<mode>` object must include:
 - `success_criteria`: how the cycle counts as useful.
 - `escalation_criteria`: when to stop or ask for help.
 
+The default example modes are:
+
+- `method_exploration`: early-stage candidate method generation and bounded
+  validation.
+- `audit_validation`: data, metric, runner, provenance, and safety validation.
+- `target_recovery`: predefined target recovery or improvement.
+
+For built-in mode names, `runtime/last_cycle_outcome.json` should include
+mode-specific `mode_details`; `scripts/validate_cycle_outcome.py` checks those
+fields after a cycle.
+
 ## `workspaces`
 
 Writable project roots. `bootstrap_layout.py` creates symlinks under

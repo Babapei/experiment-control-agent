@@ -30,42 +30,89 @@
     "retry_max_seconds": 3600
   },
   "modes": {
-    "agent_modes": ["audit_exploration", "target_recovery"],
+    "agent_modes": ["method_exploration", "audit_validation", "target_recovery"],
     "default_agent_mode": "target_recovery",
     "agent_mode_contracts": {
-      "audit_exploration": {
-        "purpose": "Audit uncertain experiment chains before treating them as recovery candidates.",
+      "method_exploration": {
+        "purpose": "Explore candidate method ideas before committing them to row-level recovery.",
         "entry_conditions": [
-          "row provenance, metric mapping, leakage risk, or runner behavior is unclear",
-          "a candidate needs a narrow probe before full-row execution"
+          "a row family lacks a mature candidate route",
+          "baseline evidence suggests a method gap but target thresholds are not yet actionable",
+          "a small prototype or ablation can test a new research hypothesis cheaply"
         ],
         "required_reads": [
           "profiles/example-ea-sbm/AGENTS.project.md",
           "profiles/example-ea-sbm/CYCLE_BRIEF.md",
           "profiles/example-ea-sbm/targets.example.md",
           "runtime/current_status.md",
-          "runtime/research_lanes.md"
+          "runtime/research_lanes.md",
+          "recent runtime/agent_journal.md entries"
+        ],
+        "allowed_actions": [
+          "identify one method gap or hypothesis",
+          "design a bounded prototype, ablation, or smoke-scale evaluation",
+          "implement minimal code/config changes inside writable workspaces",
+          "launch small exploratory packages",
+          "promote, revise, or reject candidate method routes"
+        ],
+        "required_artifacts": [
+          "research question or method gap",
+          "hypothesis and candidate method",
+          "validation design and evaluation signal",
+          "prototype or exploratory evidence path",
+          "promote, revise, reject, or continue decision",
+          "updated status, journal, and lane ledger"
+        ],
+        "success_criteria": [
+          "one candidate method becomes more or less credible using evidence",
+          "the next row-recovery or validation step is more specific than before",
+          "the agent avoids broad undirected metric search"
+        ],
+        "escalation_criteria": [
+          "the method idea requires data or domain context outside configured workspaces",
+          "no bounded prototype can test the hypothesis",
+          "the proposed direction would require broad model redesign beyond one cycle"
+        ]
+      },
+      "audit_validation": {
+        "purpose": "Audit uncertain experiment chains before treating them as recovery evidence.",
+        "entry_conditions": [
+          "row provenance, metric mapping, leakage risk, or runner behavior is unclear",
+          "a candidate needs a narrow validation before full-row execution",
+          "completed evidence may not be comparable to target rows"
+        ],
+        "required_reads": [
+          "profiles/example-ea-sbm/AGENTS.project.md",
+          "profiles/example-ea-sbm/CYCLE_BRIEF.md",
+          "profiles/example-ea-sbm/targets.example.md",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md",
+          "recent runtime/agent_journal.md entries"
         ],
         "allowed_actions": [
           "config and command audits",
           "data/provenance checks",
+          "metric mapping checks",
           "single-factor smoke tests",
-          "candidate package design"
+          "candidate package design without launching if evidence is insufficient"
         ],
         "required_artifacts": [
+          "uncertainty being audited",
           "audit evidence path",
+          "verdict and caveats",
           "updated lane note",
           "journal entry",
           "promotion or follow-up criterion"
         ],
         "success_criteria": [
           "the uncertainty blocking a target row is reduced",
-          "the next action is a specific candidate, blocker, or follow-up audit"
+          "the next action is a specific candidate, blocker, or follow-up audit",
+          "unsafe or incomparable evidence is not promoted"
         ],
         "escalation_criteria": [
           "target definition is missing",
           "evidence needed for the audit is outside available workspaces",
-          "the next action would require broad model redesign"
+          "the next validation would risk leakage or overwrite evidence"
         ]
       },
       "target_recovery": {

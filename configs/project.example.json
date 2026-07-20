@@ -30,45 +30,90 @@
     "retry_max_seconds": 3600
   },
   "modes": {
-    "agent_modes": ["audit_exploration", "target_recovery"],
-    "default_agent_mode": "audit_exploration",
+    "agent_modes": ["method_exploration", "audit_validation", "target_recovery"],
+    "default_agent_mode": "method_exploration",
     "agent_mode_contracts": {
-      "audit_exploration": {
-        "purpose": "Reduce uncertainty before committing expensive experiments.",
+      "method_exploration": {
+        "purpose": "Explore early-stage research ideas by proposing, prototyping, and testing candidate methods.",
         "entry_conditions": [
-          "failure cause, data provenance, leakage risk, or command mapping is unclear",
-          "a new route needs a narrow probe, smoke test, or audit before full execution",
-          "the project does not yet have enough evidence for target recovery or production runs"
+          "the project does not yet have fixed target rows or a mature candidate method",
+          "the next useful step is to generate or refine hypotheses",
+          "small prototypes, ablations, or sanity checks can provide useful evidence"
         ],
         "required_reads": [
           "configured project policy and cycle brief",
           "runtime/current_status.md",
           "runtime/research_lanes.md",
           "recent runtime/agent_journal.md entries",
-          "active managed jobs"
+          "prior evidence for explored hypotheses",
+          "active managed jobs and available resources"
+        ],
+        "allowed_actions": [
+          "propose one to three candidate hypotheses",
+          "rank candidates by expected information gain and cost",
+          "implement a minimal prototype or experiment variant inside writable workspaces",
+          "launch bounded smoke tests, toy runs, ablations, or small-scale evaluations",
+          "revise, reject, or promote candidate methods from evidence"
+        ],
+        "required_artifacts": [
+          "research question or gap selected",
+          "hypothesis and candidate method",
+          "validation design and evaluation signal",
+          "evidence path for the prototype, analysis, or run",
+          "promote, revise, reject, or continue decision",
+          "updated status, journal, and lane note"
+        ],
+        "success_criteria": [
+          "one candidate method is made more or less credible using evidence",
+          "the next research step is more specific than before",
+          "the agent avoids broad undirected search and records why the chosen probe was informative"
+        ],
+        "escalation_criteria": [
+          "the research objective is too vague to propose a testable hypothesis",
+          "no safe writable workspace exists for a prototype or probe",
+          "the next useful idea requires domain knowledge or data access outside the configured profile"
+        ]
+      },
+      "audit_validation": {
+        "purpose": "Validate data, metrics, runners, provenance, and safety assumptions before trusting or promoting work.",
+        "entry_conditions": [
+          "failure cause, data provenance, leakage risk, or command mapping is unclear",
+          "a candidate method needs preflight validation before full execution",
+          "completed evidence may be inconsistent, incomparable, or unsafe to use"
+        ],
+        "required_reads": [
+          "configured project policy and cycle brief",
+          "runtime/current_status.md",
+          "runtime/research_lanes.md",
+          "recent runtime/agent_journal.md entries",
+          "active managed jobs",
+          "the specific artifact, command, dataset, or metric under audit"
         ],
         "allowed_actions": [
           "focused audits",
           "single-factor probes",
           "smoke tests",
           "data/provenance/leakage checks",
+          "metric and command mapping checks",
           "candidate package design without launching if evidence is insufficient"
         ],
         "required_artifacts": [
-          "audit or probe evidence path",
-          "updated status or lane note",
-          "journal entry with the next decision",
-          "promotion, rejection, or follow-up criterion"
+          "uncertainty being audited",
+          "audit action performed",
+          "audit evidence path",
+          "verdict and caveats",
+          "promotion, rejection, or follow-up criterion",
+          "updated status, journal, and lane note"
         ],
         "success_criteria": [
           "one uncertainty is materially reduced",
           "the next safe action is more specific than before",
-          "the agent avoids broad metric-chasing or premature full runs"
+          "unsafe or incomparable evidence is not promoted"
         ],
         "escalation_criteria": [
           "the next step needs user-only context",
           "safe write boundaries or trusted evidence sources are unclear",
-          "the required action would be a broad redesign rather than a bounded probe"
+          "the required validation cannot be performed from available workspaces"
         ]
       },
       "target_recovery": {

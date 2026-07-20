@@ -25,7 +25,8 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("project", config)
         self.assertIn("modes", config)
         self.assertEqual(get_value(config, "modes.default_batch_profile"), "auto")
-        self.assertIn("audit_exploration", get_value(config, "modes.agent_mode_contracts"))
+        self.assertIn("method_exploration", get_value(config, "modes.agent_mode_contracts"))
+        self.assertIn("audit_validation", get_value(config, "modes.agent_mode_contracts"))
 
     def test_root_interpolation(self) -> None:
         config = load_config()
@@ -100,9 +101,9 @@ class PromptRenderTests(unittest.TestCase):
 class CycleOutcomeTests(unittest.TestCase):
     def test_valid_cycle_outcome(self) -> None:
         config = load_config()
-        contract = get_value(config, "modes.agent_mode_contracts.audit_exploration")
+        contract = get_value(config, "modes.agent_mode_contracts.method_exploration")
         payload = {
-            "agent_mode": "audit_exploration",
+            "agent_mode": "method_exploration",
             "execution_mode": "manual",
             "cycle_kind": "cycle",
             "summary": "Reduced one uncertainty with a bounded probe.",
@@ -110,6 +111,14 @@ class CycleOutcomeTests(unittest.TestCase):
             "actions": ["smoke test"],
             "artifacts": ["runtime/current_status.md"],
             "evidence_paths": ["profiles/default/CYCLE_BRIEF.md"],
+            "mode_details": {
+                "research_question": "Can a tiny candidate route provide useful signal?",
+                "hypothesis": "A bounded probe will expose whether the route is viable.",
+                "candidate_method": "Minimal prototype with one smoke-scale evaluation.",
+                "validation_design": "Run one small probe and inspect its completion artifact.",
+                "evaluation_signal": "Probe completes and produces interpretable evidence.",
+                "decision": "Continue with a narrower follow-up.",
+            },
             "success_criterion_met": contract["success_criteria"][0],
             "escalation_criterion_used": "",
             "next_decision": "continue audit with a narrower follow-up",
@@ -121,7 +130,7 @@ class CycleOutcomeTests(unittest.TestCase):
     def test_cycle_outcome_requires_success_or_escalation(self) -> None:
         config = load_config()
         payload = {
-            "agent_mode": "audit_exploration",
+            "agent_mode": "method_exploration",
             "execution_mode": "manual",
             "cycle_kind": "cycle",
             "summary": "No decision recorded.",
@@ -129,6 +138,14 @@ class CycleOutcomeTests(unittest.TestCase):
             "actions": ["inspect"],
             "artifacts": ["runtime/current_status.md"],
             "evidence_paths": ["profiles/default/CYCLE_BRIEF.md"],
+            "mode_details": {
+                "research_question": "Can this route work?",
+                "hypothesis": "Maybe.",
+                "candidate_method": "Probe.",
+                "validation_design": "Run it.",
+                "evaluation_signal": "Artifact exists.",
+                "decision": "Unknown.",
+            },
             "success_criterion_met": "",
             "escalation_criterion_used": "",
             "next_decision": "unknown",
@@ -136,6 +153,29 @@ class CycleOutcomeTests(unittest.TestCase):
         findings = []
         check_cycle_outcome_payload(findings, config, payload)
         self.assertTrue([item for item in findings if item.severity == "ERROR" and "success_criterion_met" in item.message])
+
+    def test_method_exploration_requires_mode_details(self) -> None:
+        config = load_config()
+        contract = get_value(config, "modes.agent_mode_contracts.method_exploration")
+        payload = {
+            "agent_mode": "method_exploration",
+            "execution_mode": "manual",
+            "cycle_kind": "cycle",
+            "summary": "Missing method-specific details.",
+            "reads": ["profiles/default/CYCLE_BRIEF.md"],
+            "actions": ["inspect"],
+            "artifacts": ["runtime/current_status.md"],
+            "evidence_paths": ["profiles/default/CYCLE_BRIEF.md"],
+            "mode_details": {
+                "research_question": "Can this route work?"
+            },
+            "success_criterion_met": contract["success_criteria"][0],
+            "escalation_criterion_used": "",
+            "next_decision": "continue",
+        }
+        findings = []
+        check_cycle_outcome_payload(findings, config, payload)
+        self.assertTrue([item for item in findings if item.severity == "ERROR" and "mode_details.hypothesis" in item.message])
 
 
 class ScriptSmokeTests(unittest.TestCase):

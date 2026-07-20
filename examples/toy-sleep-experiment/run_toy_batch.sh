@@ -42,7 +42,7 @@ cat > "$BASE_DIR/runtime/current_status.md" <<EOF
 # Current Status
 
 - State: toy batch launched.
-- Agent mode: \`$(cat "$BASE_DIR/runtime/AGENT_MODE" 2>/dev/null || echo audit_exploration)\`
+- Agent mode: \`$(cat "$BASE_DIR/runtime/AGENT_MODE" 2>/dev/null || echo method_exploration)\`
 - Execution mode: \`$(cat "$BASE_DIR/runtime/EXECUTION_MODE" 2>/dev/null || echo manual)\`
 - Current phase: three toy sleep tasks are running or have completed.
 - Active/background jobs: inspect with \`scripts/list_active_jobs.py\`.
@@ -87,4 +87,3 @@ done
 echo "Launched toy batch: $BATCH_DIR"
 echo "Result root: $RESULT_ROOT"
 echo "Run: scripts/list_active_jobs.py"
-
