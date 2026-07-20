@@ -95,6 +95,7 @@ The agent expects concise runtime files:
 - `runtime/batch_low_api/current_batch.md`
 - `runtime/batch_low_api/batches/<id>/plan.md`
 - `runtime/batch_low_api/batches/<id>/manifest.tsv`
+- `runtime/batch_low_api/batches/<id>/status.tsv`
 
 These files let another planning cycle resume without relying on memory.
 
@@ -252,7 +253,8 @@ Behavior:
 
 1. Planner runs once at a batch boundary.
 2. It writes a plan and manifest.
-3. It launches ordinary jobs.
+3. It launches ordinary jobs, preferably through `scripts/launch_batch_job.sh`
+   so `status.tsv` records running/completed/failed events.
 4. It exits.
 5. Training runs without more LLM calls.
 6. The next planning cycle happens after active jobs finish and watched results

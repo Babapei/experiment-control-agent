@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agent_core.config import load_config, root, state_file
+from scripts.batch_status import validate_status_file
 from scripts.validate_cycle_outcome import run_checks as run_cycle_outcome_checks
 
 
@@ -95,6 +96,8 @@ def check_manifest(findings: list[Finding], config: dict) -> None:
         return
     if expected and rows[0] != expected:
         add(findings, "WARN", "manifest", f"manifest header differs from config: {rows[0]}")
+    for item in validate_status_file(batch_dir / "status.tsv"):
+        add(findings, item.severity, item.check, item.message)
 
 
 def check_cycle_outcome(findings: list[Finding]) -> None:

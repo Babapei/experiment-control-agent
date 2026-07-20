@@ -10,6 +10,7 @@ It demonstrates:
 - active job detection
 - result signature changes
 - low-API batch artifacts
+- batch `status.tsv` events
 - status, journal, and lane ledgers
 
 Run it from the repository root:
@@ -28,4 +29,3 @@ scripts/show_runtime_status.sh
 
 Remove `configs/project.json` before publishing if it contains local machine
 paths or private project details.
-

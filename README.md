@@ -111,6 +111,7 @@ python3 scripts/bootstrap_layout.py
 python3 scripts/doctor.py
 python3 scripts/inspect_config.py
 python3 scripts/render_prompt.py batch_low_api
+scripts/launch_batch_job.sh
 scripts/list_active_jobs.py
 scripts/show_runtime_status.sh
 scripts/run_checks.sh

@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 from agent_core.config import get_value, load_config, resolve_path, root
 from scripts.compute_signature import command_lines
+from scripts.batch_status import append_event, status_path, validate_status_file
 from scripts.doctor import check_modes as doctor_check_modes
 from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
 from scripts.render_prompt import render_context
@@ -76,6 +77,55 @@ class ProcessParsingTests(unittest.TestCase):
 class SignatureTests(unittest.TestCase):
     def test_missing_command_is_empty(self) -> None:
         self.assertEqual(command_lines(["definitely-not-a-real-agent-tool"]), [])
+
+
+class BatchStatusTests(unittest.TestCase):
+    def test_append_and_validate_status_events(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            batch_dir = Path(tmpdir) / "batch"
+            append_event(batch_dir, "pkg-a", "running", pid="123", output_root="out", log_path="run.log", command="python train.py")
+            append_event(batch_dir, "pkg-a", "completed", pid="123", exit_code="0", output_root="out", log_path="run.log", command="python train.py")
+            findings = validate_status_file(status_path(batch_dir))
+            self.assertFalse([item for item in findings if item.severity == "ERROR"])
+
+    def test_completed_status_requires_exit_code(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.assertRaises(ValueError):
+                append_event(Path(tmpdir), "pkg-a", "completed")
+
+    def test_launch_wrapper_records_terminal_status(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            batch_dir = Path(tmpdir) / "batch"
+            output_dir = Path(tmpdir) / "out"
+            log_path = Path(tmpdir) / "job.log"
+            subprocess.run(
+                [
+                    str(ROOT / "scripts" / "launch_batch_job.sh"),
+                    str(batch_dir),
+                    "pkg-a",
+                    str(output_dir),
+                    str(log_path),
+                    "--",
+                    sys.executable,
+                    "-c",
+                    "from pathlib import Path; import sys; p=Path(sys.argv[1]); p.mkdir(parents=True, exist_ok=True); (p / 'done.txt').write_text('ok')",
+                    str(output_dir),
+                ],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            for _ in range(50):
+                rows = (status_path(batch_dir)).read_text(encoding="utf-8") if status_path(batch_dir).exists() else ""
+                if "\tcompleted\t" in rows:
+                    break
+                import time
+
+                time.sleep(0.1)
+            findings = validate_status_file(status_path(batch_dir))
+            self.assertFalse([item for item in findings if item.severity == "ERROR"])
+            self.assertIn("\tcompleted\t", status_path(batch_dir).read_text(encoding="utf-8"))
 
 
 class PromptRenderTests(unittest.TestCase):

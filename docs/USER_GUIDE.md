@@ -219,6 +219,8 @@ For every batch, check:
 - `runtime/batch_low_api/current_batch.md`
 - `runtime/batch_low_api/batches/<id>/plan.md`
 - `runtime/batch_low_api/batches/<id>/manifest.tsv`
+- `runtime/batch_low_api/batches/<id>/status.tsv` if packages were launched
+  with `scripts/launch_batch_job.sh`
 - `runtime/current_status.md`
 - `runtime/research_lanes.md`
 - result files under configured `results.watch_paths`

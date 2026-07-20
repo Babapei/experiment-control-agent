@@ -42,17 +42,22 @@ Batch-planning rules:
   or audit artifacts.
 - Launch with tmux/nohup/scheduler as appropriate, perform only a short startup
   check, and exit.
+- Prefer `scripts/launch_batch_job.sh` for ordinary background packages so the
+  batch gets a machine-readable `status.tsv` with running/completed/failed
+  events. Use scheduler-specific launch commands only when the project profile
+  requires them, and then record equivalent status evidence manually.
 
 Required low-API artifacts:
 
 1. Create `runtime/batch_low_api/batches/<timestamp>/`.
 2. Write `plan.md`.
 3. Write `manifest.tsv` using the configured manifest columns.
-4. Update `runtime/batch_low_api/current_batch.md`.
-5. Update `runtime/current_status.md`.
-6. Append to `runtime/agent_journal.md`.
-7. Update project-specific ledgers or dashboards if state changed.
-8. Write `runtime/last_cycle_outcome.json` using
+4. Write or maintain `status.tsv` for launched packages when possible.
+5. Update `runtime/batch_low_api/current_batch.md`.
+6. Update `runtime/current_status.md`.
+7. Append to `runtime/agent_journal.md`.
+8. Update project-specific ledgers or dashboards if state changed.
+9. Write `runtime/last_cycle_outcome.json` using
    `templates/CYCLE_OUTCOME_TEMPLATE.json`.
 
 The cycle outcome must record the active agent mode, execution mode, reads

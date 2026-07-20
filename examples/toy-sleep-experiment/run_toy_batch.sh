@@ -77,13 +77,19 @@ for task in toy-a toy-b toy-c; do
   duration=5
   [[ "$task" == "toy-b" ]] && duration=6
   [[ "$task" == "toy-c" ]] && duration=7
-  nohup "$PYTHON_BIN" "$BASE_DIR/examples/toy-sleep-experiment/toy_task.py" \
+  "$BASE_DIR/scripts/launch_batch_job.sh" \
+    "$BATCH_DIR" \
+    "$task" \
+    "$RESULT_ROOT/$task" \
+    "$LOG_DIR/${task}_${STAMP}.log" \
+    -- \
+    "$PYTHON_BIN" "$BASE_DIR/examples/toy-sleep-experiment/toy_task.py" \
     --task-id "$task" \
     --duration "$duration" \
-    --output-dir "$RESULT_ROOT/$task" \
-    > "$LOG_DIR/${task}_${STAMP}.log" 2>&1 &
+    --output-dir "$RESULT_ROOT/$task"
 done
 
 echo "Launched toy batch: $BATCH_DIR"
 echo "Result root: $RESULT_ROOT"
 echo "Run: scripts/list_active_jobs.py"
+echo "Status: $BATCH_DIR/status.tsv"
