@@ -52,6 +52,13 @@ Required low-API artifacts:
 5. Update `runtime/current_status.md`.
 6. Append to `runtime/agent_journal.md`.
 7. Update project-specific ledgers or dashboards if state changed.
+8. Write `runtime/last_cycle_outcome.json` using
+   `templates/CYCLE_OUTCOME_TEMPLATE.json`.
+
+The cycle outcome must record the active agent mode, execution mode, reads
+performed, actions taken, artifacts/evidence created or inspected, exactly one
+satisfied success criterion or escalation criterion from the active mode
+contract, and the next decision.
 
 Final response: short operational summary including whether jobs were launched
 and the batch directory.

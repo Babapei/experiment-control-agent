@@ -94,3 +94,8 @@ fi
   echo "  jsonl: $JSONL_LOG"
   echo "  last_message: $TEXT_LOG"
 } >> "$BASE_DIR/logs/runner.log"
+
+{
+  echo "[$(date '+%F %T')] validating cycle outcome for $STAMP"
+  "$PYTHON_BIN" "$BASE_DIR/scripts/validate_cycle_outcome.py" || true
+} >> "$BASE_DIR/logs/runner.log" 2>&1

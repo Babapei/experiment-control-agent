@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agent_core.config import load_config, root, state_file
+from scripts.validate_cycle_outcome import run_checks as run_cycle_outcome_checks
 
 
 @dataclass
@@ -96,6 +97,15 @@ def check_manifest(findings: list[Finding], config: dict) -> None:
         add(findings, "WARN", "manifest", f"manifest header differs from config: {rows[0]}")
 
 
+def check_cycle_outcome(findings: list[Finding]) -> None:
+    current_status = root() / "runtime" / "current_status.md"
+    journal = root() / "runtime" / "agent_journal.md"
+    if not current_status.exists() and not journal.exists() and not state_file("last_cycle_outcome.json").exists():
+        return
+    for item in run_cycle_outcome_checks(missing_severity="WARN"):
+        add(findings, item.severity, item.check, item.message)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate generic agent runtime state.")
     parser.add_argument("--json", action="store_true")
@@ -106,6 +116,7 @@ def main() -> int:
     check_required_files(findings)
     check_modes(findings, config)
     check_manifest(findings, config)
+    check_cycle_outcome(findings)
 
     if args.json:
         print(json.dumps([asdict(item) for item in findings], ensure_ascii=False, indent=2))

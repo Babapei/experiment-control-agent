@@ -22,9 +22,11 @@ echo "== doctor =="
 echo "== runtime validation =="
 "$PYTHON_BIN" scripts/validate_agent_state.py
 
+echo "== cycle outcome validation =="
+"$PYTHON_BIN" scripts/validate_cycle_outcome.py --allow-missing
+
 echo "== prompt render =="
 "$PYTHON_BIN" scripts/render_prompt.py cycle >/dev/null
 "$PYTHON_BIN" scripts/render_prompt.py batch_low_api >/dev/null
 
 echo "OK"
-

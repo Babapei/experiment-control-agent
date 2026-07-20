@@ -16,6 +16,7 @@ from scripts.compute_signature import command_lines
 from scripts.doctor import check_modes as doctor_check_modes
 from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
 from scripts.render_prompt import render_context
+from scripts.validate_cycle_outcome import check_outcome as check_cycle_outcome_payload
 
 
 class ConfigTests(unittest.TestCase):
@@ -94,6 +95,47 @@ class PromptRenderTests(unittest.TestCase):
         findings = []
         doctor_check_modes(findings, config)
         self.assertTrue([item for item in findings if item.severity == "ERROR" and "missing a contract" in item.message])
+
+
+class CycleOutcomeTests(unittest.TestCase):
+    def test_valid_cycle_outcome(self) -> None:
+        config = load_config()
+        contract = get_value(config, "modes.agent_mode_contracts.audit_exploration")
+        payload = {
+            "agent_mode": "audit_exploration",
+            "execution_mode": "manual",
+            "cycle_kind": "cycle",
+            "summary": "Reduced one uncertainty with a bounded probe.",
+            "reads": ["profiles/default/CYCLE_BRIEF.md"],
+            "actions": ["smoke test"],
+            "artifacts": ["runtime/current_status.md"],
+            "evidence_paths": ["profiles/default/CYCLE_BRIEF.md"],
+            "success_criterion_met": contract["success_criteria"][0],
+            "escalation_criterion_used": "",
+            "next_decision": "continue audit with a narrower follow-up",
+        }
+        findings = []
+        check_cycle_outcome_payload(findings, config, payload)
+        self.assertFalse([item for item in findings if item.severity == "ERROR"])
+
+    def test_cycle_outcome_requires_success_or_escalation(self) -> None:
+        config = load_config()
+        payload = {
+            "agent_mode": "audit_exploration",
+            "execution_mode": "manual",
+            "cycle_kind": "cycle",
+            "summary": "No decision recorded.",
+            "reads": ["profiles/default/CYCLE_BRIEF.md"],
+            "actions": ["inspect"],
+            "artifacts": ["runtime/current_status.md"],
+            "evidence_paths": ["profiles/default/CYCLE_BRIEF.md"],
+            "success_criterion_met": "",
+            "escalation_criterion_used": "",
+            "next_decision": "unknown",
+        }
+        findings = []
+        check_cycle_outcome_payload(findings, config, payload)
+        self.assertTrue([item for item in findings if item.severity == "ERROR" and "success_criterion_met" in item.message])
 
 
 class ScriptSmokeTests(unittest.TestCase):

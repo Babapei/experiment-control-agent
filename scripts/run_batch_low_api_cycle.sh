@@ -167,3 +167,8 @@ fi
 
 record_usage "completed"
 echo "[$(date '+%F %T')] completed low-API cycle $STAMP" >> "$BASE_DIR/logs/batch_low_api_runner.log"
+
+{
+  echo "[$(date '+%F %T')] validating low-API cycle outcome for $STAMP"
+  "$PYTHON_BIN" "$BASE_DIR/scripts/validate_cycle_outcome.py" || true
+} >> "$BASE_DIR/logs/batch_low_api_runner.log" 2>&1

@@ -1,0 +1,16 @@
+{
+  "agent_mode": "",
+  "execution_mode": "",
+  "cycle_kind": "cycle|batch_low_api|supplemental",
+  "started_at": "",
+  "completed_at": "",
+  "summary": "",
+  "reads": [],
+  "actions": [],
+  "artifacts": [],
+  "evidence_paths": [],
+  "success_criterion_met": "",
+  "escalation_criterion_used": "",
+  "next_decision": "",
+  "notes": []
+}
