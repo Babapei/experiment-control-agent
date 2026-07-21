@@ -103,7 +103,9 @@ fields after a cycle.
 ## `workspaces`
 
 Writable project roots. `bootstrap_layout.py` creates symlinks under
-`workspaces/`.
+`workspaces/`. Link names must be simple names, not paths. Bootstrap refuses to
+replace existing regular files or directories under `workspaces/`; move those
+manually before rerunning bootstrap.
 
 ```json
 {
@@ -116,7 +118,9 @@ Writable project roots. `bootstrap_layout.py` creates symlinks under
 ## `originals`
 
 Read-only reference roots. `bootstrap_layout.py` creates symlinks under
-`originals/`.
+`originals/`. Link names must be simple names, not paths. Bootstrap refuses to
+replace existing regular files or directories under `originals/`; move those
+manually before rerunning bootstrap.
 
 ```json
 {

@@ -85,6 +85,73 @@ class ProviderTests(unittest.TestCase):
         self.assertIn('model_reasoning_effort="high"', args)
 
 
+class BootstrapLayoutTests(unittest.TestCase):
+    def test_link_map_refuses_existing_regular_file(self) -> None:
+        import scripts.bootstrap_layout as bootstrap_layout
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            control_root = Path(tmpdir) / "control"
+            target = Path(tmpdir) / "target"
+            control_root.mkdir()
+            target.mkdir()
+            parent = control_root / "workspaces"
+            parent.mkdir()
+            existing = parent / "main"
+            existing.write_text("do not delete", encoding="utf-8")
+
+            original_root = bootstrap_layout.root
+            bootstrap_layout.root = lambda: control_root
+            try:
+                with self.assertRaisesRegex(RuntimeError, "refusing to replace non-symlink"):
+                    bootstrap_layout.link_map("workspaces", "workspaces", {"workspaces": {"main": {"path": str(target)}}})
+            finally:
+                bootstrap_layout.root = original_root
+
+            self.assertEqual(existing.read_text(encoding="utf-8"), "do not delete")
+
+    def test_link_map_replaces_existing_symlink(self) -> None:
+        import scripts.bootstrap_layout as bootstrap_layout
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            control_root = Path(tmpdir) / "control"
+            old_target = Path(tmpdir) / "old"
+            new_target = Path(tmpdir) / "new"
+            control_root.mkdir()
+            old_target.mkdir()
+            new_target.mkdir()
+            parent = control_root / "workspaces"
+            parent.mkdir()
+            link = parent / "main"
+            os.symlink(old_target, link)
+
+            original_root = bootstrap_layout.root
+            bootstrap_layout.root = lambda: control_root
+            try:
+                bootstrap_layout.link_map("workspaces", "workspaces", {"workspaces": {"main": {"path": str(new_target)}}})
+            finally:
+                bootstrap_layout.root = original_root
+
+            self.assertTrue(link.is_symlink())
+            self.assertEqual(os.readlink(link), str(new_target))
+
+    def test_link_map_rejects_unsafe_link_name(self) -> None:
+        import scripts.bootstrap_layout as bootstrap_layout
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            control_root = Path(tmpdir) / "control"
+            target = Path(tmpdir) / "target"
+            control_root.mkdir()
+            target.mkdir()
+
+            original_root = bootstrap_layout.root
+            bootstrap_layout.root = lambda: control_root
+            try:
+                with self.assertRaisesRegex(ValueError, "unsafe workspaces link name"):
+                    bootstrap_layout.link_map("workspaces", "workspaces", {"workspaces": {"../escape": {"path": str(target)}}})
+            finally:
+                bootstrap_layout.root = original_root
+
+
 class ProcessParsingTests(unittest.TestCase):
     def test_parse_elapsed_linux_seconds(self) -> None:
         self.assertEqual(parse_elapsed("3661"), 3661)

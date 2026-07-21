@@ -10,6 +10,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from agent_core.config import ensure_runtime_dirs, load_config, resolve_path, root, state_file
 
 
+def safe_link_path(parent: Path, name: str) -> Path:
+    item = Path(name)
+    if item.is_absolute() or item.name != name or name in {"", ".", ".."}:
+        raise ValueError(f"unsafe {parent.name} link name: {name!r}")
+    return parent / name
+
+
+def ensure_symlink(link: Path, target: Path) -> None:
+    if link.is_symlink():
+        if os.readlink(link) == str(target):
+            return
+        link.unlink()
+    elif link.exists():
+        raise RuntimeError(f"refusing to replace non-symlink path: {link}")
+    os.symlink(target, link)
+
+
 def link_map(section: str, target_parent: str, config: dict) -> None:
     entries = config.get(section, {})
     if not isinstance(entries, dict):
@@ -25,11 +42,9 @@ def link_map(section: str, target_parent: str, config: dict) -> None:
             continue
         if not path:
             continue
-        link = parent / name
+        link = safe_link_path(parent, name)
         target = resolve_path(path)
-        if link.exists() or link.is_symlink():
-            link.unlink()
-        os.symlink(target, link)
+        ensure_symlink(link, target)
 
 
 def init_state(config: dict) -> None:
@@ -48,8 +63,12 @@ def init_state(config: dict) -> None:
 def main() -> int:
     cfg = load_config()
     ensure_runtime_dirs()
-    link_map("workspaces", "workspaces", cfg)
-    link_map("originals", "originals", cfg)
+    try:
+        link_map("workspaces", "workspaces", cfg)
+        link_map("originals", "originals", cfg)
+    except (RuntimeError, ValueError) as exc:
+        print(f"bootstrap_layout: {exc}", file=sys.stderr)
+        return 1
     init_state(cfg)
     print(f"Bootstrapped agent layout at {root()}")
     for parent_name in ("workspaces", "originals"):
