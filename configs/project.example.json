@@ -4,6 +4,10 @@
     "description": "Replace this with your project objective.",
     "control_root": "."
   },
+  "provider": {
+    "type": "codex",
+    "command": "codex"
+  },
   "codex": {
     "home": ".codex-home",
     "auth_required": true,

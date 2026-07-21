@@ -4,6 +4,10 @@
     "description": "CPU-only demo profile for Experiment Control Agent.",
     "control_root": "."
   },
+  "provider": {
+    "type": "codex",
+    "command": "codex"
+  },
   "codex": {
     "home": ".codex-home",
     "auth_required": false,

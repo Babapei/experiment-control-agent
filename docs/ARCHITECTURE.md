@@ -2,8 +2,8 @@
 
 Experiment Control Agent is a control plane around long-running experiments. It
 does not train models itself. It asks an LLM planner to perform bounded planning
-cycles, then launches ordinary shell, Python, tmux, or scheduler jobs. The first
-provider implementation uses `codex exec`.
+cycles, then launches ordinary shell, Python, tmux, or scheduler jobs. The
+bundled planning-provider adapter uses `codex exec`.
 
 ## Research Judgment Boundary
 
@@ -25,8 +25,8 @@ should not hardcode a domain strategy or force a single linear research path.
 launch_tmux_agent.sh
   -> event_agent_loop.sh | agent_loop.sh | batch_low_api_loop.sh
      -> run_codex_cycle.sh | run_batch_low_api_cycle.sh
-        -> codex exec
-           -> project scripts launched by Codex
+        -> planning provider adapter
+           -> project scripts launched during the planning cycle
 ```
 
 ## Runtime State
@@ -47,7 +47,8 @@ launch_tmux_agent.sh
 
 `configs/project.json` controls:
 
-- Codex home and optional conda activation.
+- Planning provider type/command.
+- Codex home and optional conda activation for the bundled Codex adapter.
 - Allowed modes and defaults.
 - Workspace/original symlinks.
 - Active-job regexes.

@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from agent_core.config import get_value, load_config, resolve_path, root
+from agent_core.provider import codex_exec_args, planning_provider
 from scripts.compute_signature import command_lines
 from scripts.batch_status import append_event, status_path, status_summary, validate_status_file
 from scripts.doctor import check_modes as doctor_check_modes
@@ -36,6 +37,52 @@ class ConfigTests(unittest.TestCase):
 
     def test_resolve_relative_path(self) -> None:
         self.assertEqual(resolve_path("runtime"), ROOT / "runtime")
+
+
+class ProviderTests(unittest.TestCase):
+    def test_default_provider_is_codex(self) -> None:
+        provider = planning_provider(load_config())
+        self.assertTrue(provider["supported"])
+        self.assertEqual(provider["type"], "codex")
+        self.assertEqual(provider["command"], "codex")
+        self.assertEqual(provider["home"], str(ROOT / ".codex-home"))
+
+    def test_codex_exec_args_apply_defaults(self) -> None:
+        config = load_config()
+        config["codex"] = dict(config.get("codex", {}))
+        config["codex"]["default_model"] = "test-model"
+        config["codex"]["default_reasoning_effort"] = "medium"
+        config["codex"]["disable_response_storage"] = True
+        args = codex_exec_args(planning_provider(config), cwd=ROOT, last_message_path=ROOT / "last.txt")
+        self.assertEqual(args[:4], ["codex", "exec", "--model", "test-model"])
+        self.assertIn('model_reasoning_effort="medium"', args)
+        self.assertIn("disable_response_storage=true", args)
+        self.assertEqual(args[-1], "-")
+
+    def test_provider_codex_overrides_legacy_codex(self) -> None:
+        config = load_config()
+        config["codex"] = dict(config.get("codex", {}))
+        config["codex"]["default_model"] = "legacy-model"
+        config["provider"] = {"type": "codex", "command": "custom-codex", "codex": {"default_model": "provider-model"}}
+        provider = planning_provider(config)
+        args = codex_exec_args(provider, cwd=ROOT, last_message_path=ROOT / "last.txt")
+        self.assertEqual(provider["command"], "custom-codex")
+        self.assertEqual(args[:4], ["custom-codex", "exec", "--model", "provider-model"])
+
+    def test_exec_args_overrides_config_defaults(self) -> None:
+        config = load_config()
+        config["codex"] = dict(config.get("codex", {}))
+        config["codex"]["default_model"] = "config-model"
+        config["codex"]["default_reasoning_effort"] = "low"
+        args = codex_exec_args(
+            planning_provider(config),
+            cwd=ROOT,
+            last_message_path=ROOT / "last.txt",
+            model_override="override-model",
+            reasoning_effort_override="high",
+        )
+        self.assertEqual(args[:4], ["codex", "exec", "--model", "override-model"])
+        self.assertIn('model_reasoning_effort="high"', args)
 
 
 class ProcessParsingTests(unittest.TestCase):

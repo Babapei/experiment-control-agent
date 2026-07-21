@@ -1,8 +1,8 @@
 # Codex Provider Authentication
 
-The public control plane is designed around a generic planning-provider
-boundary. The current implementation invokes Codex CLI through `codex exec`, so
-authentication is configured with Codex settings.
+The public control plane is designed around a planning-provider boundary. The
+bundled provider adapter invokes Codex CLI through `codex exec`, so
+authentication for the default adapter is configured with Codex settings.
 
 The scripts use `codex.home` from `configs/project.json`; by default this is
 `.codex-home` under the repo root.

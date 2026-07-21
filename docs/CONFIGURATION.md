@@ -9,9 +9,11 @@ feature.
 
 Important sections:
 
-- `codex`: current planning-provider settings. The first implementation uses
-  `codex exec`, so this section includes Codex home, authentication behavior,
-  conda activation, optional model defaults, and fallback model settings.
+- `provider`: planning-provider adapter type and command. The bundled adapter
+  is `codex`.
+- `codex`: Codex adapter settings, including Codex home, authentication
+  behavior, conda activation, optional model defaults, and fallback model
+  settings.
 - `modes`: allowed agent/execution modes and batch profile soft targets.
 - `workspaces`: writable project workspaces linked under `workspaces/`.
 - `originals`: read-only references linked under `originals/`.
@@ -33,7 +35,7 @@ For a new project, configure in this order:
 3. `job_detection`, so active jobs are not missed or overcounted.
 4. `results`, so supervisors wake on meaningful artifacts.
 5. `modes` and `batch`, so unattended behavior matches your budget.
-6. `codex`, so the current planning-provider implementation can authenticate
+6. `provider` and `codex`, so the planning-provider adapter can authenticate
    and run in the right environment.
 
 For `modes`, define objective modes as contracts. Every value in

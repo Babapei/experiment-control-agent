@@ -4,6 +4,10 @@
     "description": "Sanitized example of a paper-experiment recovery profile.",
     "control_root": "."
   },
+  "provider": {
+    "type": "codex",
+    "command": "codex"
+  },
   "codex": {
     "home": ".codex-home",
     "auth_required": true,

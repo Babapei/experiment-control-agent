@@ -13,6 +13,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agent_core.config import config_path, load_config, resolve_path, root
+from agent_core.provider import planning_provider
 
 
 @dataclass
@@ -173,13 +174,18 @@ def check_results(findings: list[Finding], cfg: dict[str, Any]) -> None:
 
 
 def check_tools(findings: list[Finding], cfg: dict[str, Any]) -> None:
-    if cfg.get("codex", {}).get("auth_required", True) and shutil.which("codex") is None:
-        add(findings, "WARN", "tools", "`codex` is not on PATH in this shell")
+    provider = planning_provider(cfg)
+    if not provider.get("supported", False):
+        add(findings, "ERROR", "provider", str(provider.get("error") or "unsupported planning provider"))
+        return
+    provider_command = str(provider.get("command") or "")
+    if provider_command and shutil.which(provider_command) is None:
+        add(findings, "WARN", "tools", f"planning provider command `{provider_command}` is not on PATH in this shell")
     if cfg.get("results", {}).get("include_tmux_sessions", True) and shutil.which("tmux") is None:
         add(findings, "WARN", "tools", "`tmux` is not on PATH; supervisor launch and tmux signatures need it")
     if cfg.get("results", {}).get("include_gpu_compute_apps", True) and shutil.which("nvidia-smi") is None:
         add(findings, "INFO", "tools", "`nvidia-smi` is not on PATH; GPU signatures will be empty")
-    conda_init = cfg.get("codex", {}).get("conda_init", "")
+    conda_init = str(provider.get("conda_init") or "")
     if conda_init and not Path(conda_init).exists():
         add(findings, "WARN", "tools", f"configured conda_init does not exist: {conda_init}")
 

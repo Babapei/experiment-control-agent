@@ -3,7 +3,7 @@
 A configurable server-side LLM control plane for planning, launching, and
 monitoring long-running research experiments.
 
-The current provider implementation uses `codex exec`, but the repository is
+The default planning provider adapter uses `codex exec`, but the repository is
 structured around a generic control-plane idea: an LLM planner reads experiment
 state, launches ordinary long-running jobs, records evidence, and waits until a
 meaningful boundary before spending more API calls.
@@ -95,6 +95,13 @@ Use these when needed:
 - `templates/`: reusable status, lane, batch, and dashboard templates.
 - `runtime/`: local mutable state, ignored by git.
 - `logs/`: local logs, ignored by git.
+
+## Planning Provider
+
+The config has a `provider` section for the planner execution boundary. The
+bundled adapter is `type: "codex"`, backed by the Codex CLI. Codex-specific
+home, auth, model, and fallback settings remain in the `codex` section for
+compatibility.
 
 ## Execution Modes
 

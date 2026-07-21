@@ -8,11 +8,8 @@ export PYTHONPATH="$BASE_DIR:${PYTHONPATH:-}"
 
 mkdir -p "$BASE_DIR/logs" "$BASE_DIR/runtime"
 
-codex_home="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.home .codex-home)"
-if [[ "$codex_home" != /* ]]; then
-  codex_home="$BASE_DIR/$codex_home"
-fi
-export CODEX_HOME="$codex_home"
+# shellcheck source=scripts/load_provider_env.sh
+source "$BASE_DIR/scripts/load_provider_env.sh"
 
 LOCK_FILE="$BASE_DIR/runtime/run_codex_cycle.lock"
 PID_FILE="$BASE_DIR/runtime/run_codex_cycle.pid"
@@ -33,31 +30,7 @@ if [[ -f "$BASE_DIR/runtime/PAUSE" ]]; then
   exit 0
 fi
 
-conda_init="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.conda_init '')"
-conda_env="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.conda_env '')"
-if [[ -n "$conda_init" && -f "$conda_init" ]]; then
-  # shellcheck source=/dev/null
-  source "$conda_init"
-fi
-if [[ -n "$conda_env" ]]; then
-  conda activate "$conda_env"
-fi
-
-extra_paths="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.extra_path_entries '[]')"
-"$PYTHON_BIN" - "$extra_paths" <<'PY' > "$BASE_DIR/runtime/.extra_path_exports"
-import json
-import sys
-items = json.loads(sys.argv[1]) if sys.argv[1] else []
-for item in items:
-    print(item)
-PY
-while IFS= read -r path_entry; do
-  [[ -n "$path_entry" ]] && export PATH="$PATH:$path_entry"
-done < "$BASE_DIR/runtime/.extra_path_exports"
-rm -f "$BASE_DIR/runtime/.extra_path_exports"
-
-auth_required="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.auth_required true)"
-if [[ "$auth_required" == "true" && ! -f "$CODEX_HOME/auth.json" ]]; then
+if [[ "${PROVIDER_AUTH_REQUIRED:-true}" == "true" && ! -f "$CODEX_HOME/auth.json" ]]; then
   echo "[run_codex_cycle] missing Codex auth at $CODEX_HOME/auth.json" | tee -a "$BASE_DIR/logs/runner.log"
   exit 2
 fi
@@ -66,17 +39,15 @@ STAMP="$(date '+%Y%m%d_%H%M%S')"
 JSONL_LOG="$BASE_DIR/logs/cycle_${STAMP}.jsonl"
 TEXT_LOG="$BASE_DIR/logs/cycle_${STAMP}.last_message.txt"
 CYCLE_TIMEOUT_SECONDS="${CYCLE_TIMEOUT_SECONDS:-$("$PYTHON_BIN" "$CONFIG_VALUE" supervisor.cycle_timeout_seconds 1800)}"
+PROVIDER_EXEC_ARGS=()
+while IFS= read -r -d '' arg; do
+  PROVIDER_EXEC_ARGS+=("$arg")
+done < <("$PYTHON_BIN" "$BASE_DIR/scripts/provider_command.py" exec-args --last-message "$TEXT_LOG" --cwd "$BASE_DIR")
 
 set +e
 "$PYTHON_BIN" "$BASE_DIR/scripts/render_prompt.py" cycle | \
   timeout "$CYCLE_TIMEOUT_SECONDS" \
-    codex exec \
-      --skip-git-repo-check \
-      -C "$BASE_DIR" \
-      --dangerously-bypass-approvals-and-sandbox \
-      --output-last-message "$TEXT_LOG" \
-      --json \
-      - \
+    "${PROVIDER_EXEC_ARGS[@]}" \
     >"$JSONL_LOG"
 status=$?
 set -e

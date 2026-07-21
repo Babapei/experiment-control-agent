@@ -17,6 +17,23 @@ The main config file is `configs/project.json`. If it is missing, scripts use
 - `description`: human-facing context.
 - `control_root`: reserved for future use; keep `"."` for now.
 
+## `provider`
+
+The planning-provider execution boundary:
+
+```json
+{
+  "type": "codex",
+  "command": "codex"
+}
+```
+
+- `type`: provider adapter. The bundled adapter is `codex`.
+- `command`: executable used by the adapter.
+
+Codex-specific authentication, home, model, and fallback settings remain in the
+`codex` section. `provider.codex` may override those legacy fields when needed.
+
 ## `codex`
 
 ```json
@@ -36,7 +53,7 @@ The main config file is `configs/project.json`. If it is missing, scripts use
 - `conda_init`: optional shell script sourced before running `codex`.
 - `conda_env`: optional conda environment activated before running `codex`.
 - `extra_path_entries`: appended to `PATH` for Codex-launched commands.
-- `default_model` / `default_reasoning_effort`: optional Codex CLI overrides.
+- `default_model` / `default_reasoning_effort`: optional Codex CLI defaults.
 - fallback fields control retry profiles after repeated temporary failures.
 
 ## `supervisor`

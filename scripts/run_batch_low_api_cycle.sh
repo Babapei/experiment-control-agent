@@ -8,11 +8,8 @@ export PYTHONPATH="$BASE_DIR:${PYTHONPATH:-}"
 
 mkdir -p "$BASE_DIR/logs" "$BASE_DIR/runtime" "$BASE_DIR/runtime/batch_low_api" "$BASE_DIR/runtime/batch_low_api_supervisor"
 
-codex_home="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.home .codex-home)"
-if [[ "$codex_home" != /* ]]; then
-  codex_home="$BASE_DIR/$codex_home"
-fi
-export CODEX_HOME="$codex_home"
+# shellcheck source=scripts/load_provider_env.sh
+source "$BASE_DIR/scripts/load_provider_env.sh"
 
 LOCK_FILE="$BASE_DIR/runtime/run_batch_low_api_cycle.lock"
 PID_FILE="$BASE_DIR/runtime/run_batch_low_api_cycle.pid"
@@ -33,31 +30,7 @@ if [[ "${HONOR_PAUSE:-0}" == "1" && -f "$BASE_DIR/runtime/PAUSE" ]]; then
   exit 0
 fi
 
-conda_init="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.conda_init '')"
-conda_env="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.conda_env '')"
-if [[ -n "$conda_init" && -f "$conda_init" ]]; then
-  # shellcheck source=/dev/null
-  source "$conda_init"
-fi
-if [[ -n "$conda_env" ]]; then
-  conda activate "$conda_env"
-fi
-
-extra_paths="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.extra_path_entries '[]')"
-"$PYTHON_BIN" - "$extra_paths" <<'PY' > "$BASE_DIR/runtime/.extra_path_exports"
-import json
-import sys
-items = json.loads(sys.argv[1]) if sys.argv[1] else []
-for item in items:
-    print(item)
-PY
-while IFS= read -r path_entry; do
-  [[ -n "$path_entry" ]] && export PATH="$PATH:$path_entry"
-done < "$BASE_DIR/runtime/.extra_path_exports"
-rm -f "$BASE_DIR/runtime/.extra_path_exports"
-
-auth_required="$("$PYTHON_BIN" "$CONFIG_VALUE" codex.auth_required true)"
-if [[ "$auth_required" == "true" && ! -f "$CODEX_HOME/auth.json" ]]; then
+if [[ "${PROVIDER_AUTH_REQUIRED:-true}" == "true" && ! -f "$CODEX_HOME/auth.json" ]]; then
   echo "[run_batch_low_api_cycle] missing Codex auth at $CODEX_HOME/auth.json" | tee -a "$BASE_DIR/logs/batch_low_api_runner.log"
   exit 2
 fi
@@ -70,14 +43,19 @@ BATCH_PROFILE="${BATCH_PROFILE:-$(cat "$BASE_DIR/runtime/BATCH_PROFILE" 2>/dev/n
 CODEX_MODEL_OVERRIDE="${CODEX_MODEL_OVERRIDE:-}"
 CODEX_REASONING_EFFORT_OVERRIDE="${CODEX_REASONING_EFFORT_OVERRIDE:-}"
 SUPPLEMENTAL_BATCH="${SUPPLEMENTAL_BATCH:-0}"
-CODEX_EXEC_OVERRIDES=()
-
-if [[ -n "$CODEX_MODEL_OVERRIDE" ]]; then
-  CODEX_EXEC_OVERRIDES+=(--model "$CODEX_MODEL_OVERRIDE")
-fi
-if [[ -n "$CODEX_REASONING_EFFORT_OVERRIDE" ]]; then
-  CODEX_EXEC_OVERRIDES+=(--config "model_reasoning_effort=\"$CODEX_REASONING_EFFORT_OVERRIDE\"")
-fi
+PROVIDER_SELECTED_MODEL="config-default"
+PROVIDER_SELECTED_REASONING_EFFORT="config-default"
+eval "$("$PYTHON_BIN" "$BASE_DIR/scripts/provider_command.py" selected \
+  --model-override "$CODEX_MODEL_OVERRIDE" \
+  --reasoning-effort-override "$CODEX_REASONING_EFFORT_OVERRIDE")"
+PROVIDER_EXEC_ARGS=()
+while IFS= read -r -d '' arg; do
+  PROVIDER_EXEC_ARGS+=("$arg")
+done < <("$PYTHON_BIN" "$BASE_DIR/scripts/provider_command.py" exec-args \
+  --last-message "$TEXT_LOG" \
+  --model-override "$CODEX_MODEL_OVERRIDE" \
+  --reasoning-effort-override "$CODEX_REASONING_EFFORT_OVERRIDE" \
+  --cwd "$BASE_DIR")
 
 record_usage() {
   local status_label="$1"
@@ -116,7 +94,7 @@ PY
   usage_fields="$(cat "$usage_tmp" 2>/dev/null || printf 'NA\tNA\tNA\tNA\tNA')"
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
     "$(date '+%F %T')" "$status_label" "$BATCH_PROFILE" \
-    "${CODEX_MODEL_OVERRIDE:-config-default}" "${CODEX_REASONING_EFFORT_OVERRIDE:-config-default}" \
+    "$PROVIDER_SELECTED_MODEL" "$PROVIDER_SELECTED_REASONING_EFFORT" \
     "$usage_fields" "$JSONL_LOG" "$TEXT_LOG" >> "$usage_log"
   rm -f "$usage_tmp"
 }
@@ -139,14 +117,7 @@ is_transient_codex_failure() {
 set +e
 "$PYTHON_BIN" "$BASE_DIR/scripts/render_prompt.py" batch_low_api | \
   timeout "$CYCLE_TIMEOUT_SECONDS" \
-    codex exec \
-      "${CODEX_EXEC_OVERRIDES[@]}" \
-      --skip-git-repo-check \
-      -C "$BASE_DIR" \
-      --dangerously-bypass-approvals-and-sandbox \
-      --output-last-message "$TEXT_LOG" \
-      --json \
-      - \
+    "${PROVIDER_EXEC_ARGS[@]}" \
     >"$JSONL_LOG"
 status=$?
 set -e
