@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 from agent_core.config import get_value, load_config, resolve_path, root
 from scripts.compute_signature import command_lines
-from scripts.batch_status import append_event, status_path, validate_status_file
+from scripts.batch_status import append_event, status_path, status_summary, validate_status_file
 from scripts.doctor import check_modes as doctor_check_modes
 from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
 from scripts.render_prompt import render_context
@@ -92,6 +92,23 @@ class BatchStatusTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             with self.assertRaises(ValueError):
                 append_event(Path(tmpdir), "pkg-a", "completed")
+
+    def test_status_summary_tracks_incomplete_and_complete_batches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            batch_dir = Path(tmpdir) / "batch"
+            append_event(batch_dir, "pkg-a", "running", pid="123")
+            append_event(batch_dir, "pkg-b", "running", pid="124")
+            append_event(batch_dir, "pkg-a", "completed", pid="123", exit_code="0")
+            partial = status_summary(status_path(batch_dir))
+            self.assertFalse(partial["complete"])
+            self.assertEqual(partial["total"], 2)
+            self.assertEqual(partial["completed"], 1)
+            self.assertEqual(partial["incomplete_ids"], ["pkg-b"])
+            append_event(batch_dir, "pkg-b", "failed", pid="124", exit_code="1")
+            final = status_summary(status_path(batch_dir))
+            self.assertTrue(final["complete"])
+            self.assertEqual(final["failed"], 1)
+            self.assertEqual(final["failed_ids"], ["pkg-b"])
 
     def test_launch_wrapper_records_terminal_status(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -257,8 +257,8 @@ Behavior:
    so `status.tsv` records running/completed/failed events.
 4. It exits.
 5. Training runs without more LLM calls.
-6. The next planning cycle happens after active jobs finish and watched results
-   change.
+6. The next planning cycle happens after registered packages finish, or after
+   legacy active-job/result-signature checks indicate a batch boundary.
 
 Use when:
 
@@ -270,6 +270,11 @@ Use when:
 This mode is usually the best fit for GPU servers because the LLM plans at
 experiment boundaries instead of polling continuously while training is still
 running.
+
+For batches launched through `scripts/launch_batch_job.sh`, the supervisor uses
+`status.tsv` as the first completion signal. Process regexes and result
+signatures remain as fallback signals for manually launched or scheduler-based
+jobs.
 
 ## Supplemental Low-API Cycles
 

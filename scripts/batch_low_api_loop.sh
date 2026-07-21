@@ -87,6 +87,36 @@ active_job_count() {
   [[ "$count" =~ ^[0-9]+$ ]] && echo "$count" || echo unknown
 }
 
+current_batch_dir() {
+  "$PYTHON_BIN" - "$BASE_DIR/runtime/batch_low_api/current_batch.md" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+try:
+    text = path.read_text(encoding="utf-8")
+except FileNotFoundError:
+    raise SystemExit(0)
+for line in text.splitlines():
+    if "Batch directory:" in line and "`" in line:
+        print(line.split("`", 2)[1])
+        break
+PY
+}
+
+batch_status_summary() {
+  local batch_dir
+  batch_dir="$(current_batch_dir)"
+  [[ -z "$batch_dir" ]] && return 1
+  "$PYTHON_BIN" "$BASE_DIR/scripts/batch_status.py" summary --batch-dir "$batch_dir" 2>/dev/null
+}
+
+summary_value() {
+  local key="$1"
+  local summary="$2"
+  awk -F= -v key="$key" '$1 == key {print $2}' <<< "$summary" | tail -n 1
+}
+
 cycle_running() {
   ps -eo args= | grep -E "$BASE_DIR/scripts/run_batch_low_api_cycle.sh|codex exec .* -C $BASE_DIR" | grep -v grep >/dev/null 2>&1
 }
@@ -380,6 +410,41 @@ while true; do
     reason="$(cat "$STATE_DIR/pending_reason" 2>/dev/null || echo retry)"
     current_sig="$(cat "$STATE_DIR/pending_sig" 2>/dev/null || compute_sig)"
     run_planning_cycle "$reason" "$current_sig" "$(pending_cycle_kind)" "$retry_count_now"
+    sleep "$CHECK_INTERVAL_SECONDS"
+    continue
+  fi
+
+  registry_summary="$(batch_status_summary || true)"
+  registry_batch_dir="$(current_batch_dir)"
+  registry_has_status="$(summary_value has_status "$registry_summary")"
+  registry_valid="$(summary_value valid "$registry_summary")"
+  registry_total="$(summary_value total "$registry_summary")"
+  registry_complete="$(summary_value complete "$registry_summary")"
+  registry_failed="$(summary_value failed "$registry_summary")"
+  registry_incomplete_ids="$(summary_value incomplete_ids "$registry_summary")"
+  if [[ "$registry_has_status" == "1" && "$registry_valid" == "1" && "${registry_total:-0}" =~ ^[0-9]+$ && "$registry_total" -gt 0 ]]; then
+    if [[ "$registry_complete" != "1" ]]; then
+      printf 'waiting-for-batch-status total=%s incomplete=%s\n' "$registry_total" "${registry_incomplete_ids:-unknown}" > "$STATE_DIR/state"
+      sleep "$CHECK_INTERVAL_SECONDS"
+      continue
+    fi
+    current_sig="$(compute_sig)"
+    previous_sig="$(cat "$STATE_DIR/result.sha" 2>/dev/null || true)"
+    last_registry_completed_batch="$(cat "$STATE_DIR/last_registry_completed_batch" 2>/dev/null || true)"
+    reason="batch-status-complete"
+    if [[ "${registry_failed:-0}" =~ ^[0-9]+$ && "$registry_failed" -gt 0 ]]; then
+      reason="batch-status-failed"
+    fi
+    if [[ -n "$registry_batch_dir" && "$registry_batch_dir" != "$last_registry_completed_batch" ]]; then
+      if [[ $((now - $(last_cycle_epoch))) -ge "$MIN_CYCLE_GAP_SECONDS" ]]; then
+        run_planning_cycle "$reason" "$current_sig" "normal" 0
+        printf '%s\n' "$registry_batch_dir" > "$STATE_DIR/last_registry_completed_batch"
+      else
+        printf 'ready-after-batch-status-complete total=%s failed=%s waiting_gap=1\n' "$registry_total" "${registry_failed:-0}" > "$STATE_DIR/state"
+      fi
+    else
+      printf 'idle-after-batch-status-complete total=%s failed=%s\n' "$registry_total" "${registry_failed:-0}" > "$STATE_DIR/state"
+    fi
     sleep "$CHECK_INTERVAL_SECONDS"
     continue
   fi

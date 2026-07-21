@@ -166,6 +166,41 @@ def latest_by_package(path: Path) -> dict[str, dict[str, str]]:
     return latest
 
 
+def status_summary(path: Path) -> dict[str, Any]:
+    findings = validate_status_file(path)
+    errors = [item for item in findings if item.severity == "ERROR"]
+    latest = latest_by_package(path) if path.exists() and not errors else {}
+    running = sorted(package_id for package_id, row in latest.items() if row.get("status") == "running")
+    completed = sorted(package_id for package_id, row in latest.items() if row.get("status") == "completed")
+    failed = sorted(package_id for package_id, row in latest.items() if row.get("status") == "failed")
+    terminal = sorted(completed + failed)
+    incomplete = sorted(package_id for package_id in latest if package_id not in terminal)
+    return {
+        "has_status": path.exists(),
+        "valid": not errors,
+        "total": len(latest),
+        "running": len(running),
+        "completed": len(completed),
+        "failed": len(failed),
+        "terminal": len(terminal),
+        "complete": bool(latest) and not incomplete,
+        "running_ids": running,
+        "completed_ids": completed,
+        "failed_ids": failed,
+        "incomplete_ids": incomplete,
+        "findings": [asdict(item) for item in findings],
+    }
+
+
+def print_shell_summary(summary: dict[str, Any]) -> None:
+    for key in ("has_status", "valid", "complete"):
+        print(f"{key}={1 if summary[key] else 0}")
+    for key in ("total", "running", "completed", "failed", "terminal"):
+        print(f"{key}={summary[key]}")
+    for key in ("running_ids", "completed_ids", "failed_ids", "incomplete_ids"):
+        print(f"{key}={','.join(summary[key])}")
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Record or validate low-API batch job status.")
     sub = parser.add_subparsers(dest="action", required=True)
@@ -186,6 +221,10 @@ def main(argv: list[str]) -> int:
     validate.add_argument("--json", action="store_true")
     validate.add_argument("--strict", action="store_true")
 
+    summary = sub.add_parser("summary", help="summarize latest package status events")
+    summary.add_argument("--batch-dir", required=True)
+    summary.add_argument("--json", action="store_true")
+
     args = parser.parse_args(argv)
     if args.action == "record":
         path = append_event(
@@ -202,7 +241,16 @@ def main(argv: list[str]) -> int:
         print(path)
         return 0
 
-    findings = validate_status_file(status_path(resolve_path(args.batch_dir)))
+    path = status_path(resolve_path(args.batch_dir))
+    if args.action == "summary":
+        payload = status_summary(path)
+        if args.json:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        else:
+            print_shell_summary(payload)
+        return 0 if payload["valid"] else 1
+
+    findings = validate_status_file(path)
     if args.json:
         print(json.dumps([asdict(item) for item in findings], ensure_ascii=False, indent=2))
     else:

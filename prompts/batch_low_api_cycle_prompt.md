@@ -46,6 +46,8 @@ Batch-planning rules:
   batch gets a machine-readable `status.tsv` with running/completed/failed
   events. Use scheduler-specific launch commands only when the project profile
   requires them, and then record equivalent status evidence manually.
+  The low-API supervisor treats a valid `status.tsv` as the strongest batch
+  completion signal before falling back to process and result-signature checks.
 
 Required low-API artifacts:
 

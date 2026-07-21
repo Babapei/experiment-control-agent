@@ -78,6 +78,7 @@ Common causes:
 
 - `EXECUTION_MODE` is `manual`.
 - `runtime/PAUSE` exists.
+- the current batch `status.tsv` still has incomplete packages.
 - active jobs are still running.
 - result signature did not change.
 - `min_cycle_gap_seconds` has not elapsed.
@@ -105,4 +106,3 @@ Fix `project_docs.cycle_brief`, `project_docs.agents_policy`, and
 That is normal. `runtime/`, `logs/`, `workspaces/`, and result directories are
 ignored. Do not commit `configs/project.json` if it contains local/private
 paths.
-
