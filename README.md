@@ -121,6 +121,13 @@ scripts/run_checks.sh
 
 - Keep core scripts generic and conservative.
 - Put domain knowledge in profiles.
+- Let the agent own research judgment: hypotheses, candidate methods,
+  experiment design, prioritization, interpretation, and mode-switching
+  decisions should come from the planner and project profile, not from
+  hardcoded core workflows.
+- Let the framework own state and boundaries: runtime ledgers, evidence paths,
+  batch/job status, pause/stop behavior, and safety checks should be explicit
+  and recoverable.
 - Use explicit logs, output roots, and batch manifests.
 - Treat original/historical workspaces as read-only unless a profile says
   otherwise.

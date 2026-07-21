@@ -3,6 +3,12 @@
 A profile is the project-specific layer that tells the generic agent what the
 experiment means.
 
+Profiles should guide research judgment without turning the agent into a fixed
+checklist runner. Put scientific context, priorities, constraints, and review
+criteria in the profile; leave room for the planner to choose hypotheses,
+candidate methods, validation designs, and mode transitions from current
+evidence.
+
 ## Minimal Steps
 
 1. Copy `configs/project.example.json` to `configs/project.json`.

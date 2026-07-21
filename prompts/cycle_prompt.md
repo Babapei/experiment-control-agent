@@ -23,6 +23,12 @@ The active agent mode is a contract, not just a label. The cycle must satisfy
 its required artifacts and success criteria, or record the matching escalation
 criterion.
 
+Use the active mode as a reasoning frame, not a fixed checklist. You own the
+research judgment for this cycle: decide which hypothesis, audit, target, or
+stop condition is most useful from the current evidence. The framework requires
+clear state, evidence, and decisions; it does not prescribe the scientific idea
+or force a linear path.
+
 Do not run an open-ended loop inside this Codex call. Supervisors are external.
 Do not modify originals or historical reference workspaces unless the project
 profile explicitly marks a path writable. Do not overwrite experiment evidence;

@@ -26,6 +26,10 @@ Batch-planning rules:
   launch conflicting work.
 - Treat the active agent mode as a contract. The batch must satisfy its required
   artifacts and success criteria, or record the matching escalation criterion.
+- Use the active mode as a reasoning frame, not a fixed checklist. You own the
+  research judgment for the batch: choose the hypothesis, validation design,
+  target push, or stop/escalation decision that is most informative from the
+  current evidence.
 - If `supplemental_context.md` exists, this is a supplemental cycle. Some
   managed jobs are still active. Leave them untouched and launch only
   independent work for currently idle resources, or explain why no such work is

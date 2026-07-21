@@ -152,6 +152,11 @@ An agent mode is a contract, not just a label. Each mode should define:
 If a mode cannot define those fields clearly, it is not ready to be an
 unattended objective mode.
 
+Modes are reasoning frames, not fixed checklists. The core asks the planner to
+record the active mode's evidence and decision, but the planner still decides
+which hypothesis to pursue, what experiment is informative, when to switch
+modes, and when no local action is worth taking.
+
 The default public lifecycle is:
 
 - `method_exploration`: early-stage research automation. The planner proposes
@@ -167,7 +172,9 @@ The default public lifecycle is:
 
 Every completed cycle should write `runtime/last_cycle_outcome.json`. The
 validator checks that the outcome names the active mode, records reads/actions,
-points to evidence, and includes mode-specific details.
+points to evidence, and includes mode-specific details. It does not judge
+whether a scientific idea is creative or correct; that belongs in planner
+reasoning, project review, and accumulated evidence.
 
 ### `EXECUTION_MODE`
 

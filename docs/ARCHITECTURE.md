@@ -5,6 +5,20 @@ does not train models itself. It asks an LLM planner to perform bounded planning
 cycles, then launches ordinary shell, Python, tmux, or scheduler jobs. The first
 provider implementation uses `codex exec`.
 
+## Research Judgment Boundary
+
+The core framework should not decide the science. It should preserve state,
+record evidence, enforce local operating boundaries, and make runs resumable.
+The planner, guided by the project profile, owns research judgment:
+
+- proposing hypotheses and candidate methods;
+- deciding whether to explore, audit, recover targets, or stop;
+- designing validation experiments and ablations;
+- interpreting evidence and choosing the next scientific move.
+
+Core validators should check that decisions are recorded and recoverable. They
+should not hardcode a domain strategy or force a single linear research path.
+
 ## Control Flow
 
 ```text
@@ -23,6 +37,10 @@ launch_tmux_agent.sh
 - `runtime/PAUSE`: supervisors should not start new planning cycles.
 - `runtime/STOP`: supervisors should exit.
 - `runtime/batch_low_api/current_batch.md`: pointer to the latest batch plan.
+- `runtime/batch_low_api/batches/<id>/status.tsv`: package status events when
+  the batch registry wrapper is used.
+- `runtime/last_cycle_outcome.json`: machine-readable summary of the planner's
+  reads, actions, evidence, success/escalation criterion, and next decision.
 - `runtime/batch_low_api/usage_log.tsv`: token usage history.
 
 ## Config-Driven Parts
