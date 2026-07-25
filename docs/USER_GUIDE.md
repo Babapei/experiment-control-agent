@@ -199,6 +199,9 @@ Before leaving the agent running, confirm:
 - What API provider, model, and fallback settings are being used?
 - Does `runtime/last_cycle_outcome.json` contain the active mode's required
   details after a manual cycle?
+- Does `runtime/cycle_outcomes/` contain a new validated record for that cycle?
+- Is `runtime/REVIEW_REQUIRED` absent? If it exists, inspect the pending
+  outcome and runner log before allowing another automatic cycle.
 
 If any answer is unclear, keep the project in `manual` mode and improve the
 profile/config first.

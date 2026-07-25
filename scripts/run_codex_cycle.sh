@@ -13,6 +13,8 @@ source "$BASE_DIR/scripts/load_provider_env.sh"
 
 LOCK_FILE="$BASE_DIR/runtime/run_codex_cycle.lock"
 PID_FILE="$BASE_DIR/runtime/run_codex_cycle.pid"
+PENDING_OUTCOME="$BASE_DIR/runtime/pending_cycle_outcome.json"
+REVIEW_REQUIRED="$BASE_DIR/runtime/REVIEW_REQUIRED"
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
   echo "[run_codex_cycle] another Codex cycle is already running; skipping." | tee -a "$BASE_DIR/logs/runner.log"
@@ -29,6 +31,10 @@ if [[ -f "$BASE_DIR/runtime/PAUSE" ]]; then
   echo "[run_codex_cycle] PAUSE file present, skipping cycle."
   exit 0
 fi
+if [[ -f "$REVIEW_REQUIRED" ]]; then
+  echo "[run_codex_cycle] REVIEW_REQUIRED present; inspect and remove it before starting another automatic cycle."
+  exit 0
+fi
 
 if [[ "${PROVIDER_AUTH_REQUIRED:-true}" == "true" && ! -f "$CODEX_HOME/auth.json" ]]; then
   echo "[run_codex_cycle] missing Codex auth at $CODEX_HOME/auth.json" | tee -a "$BASE_DIR/logs/runner.log"
@@ -38,6 +44,7 @@ fi
 STAMP="$(date '+%Y%m%d_%H%M%S')"
 JSONL_LOG="$BASE_DIR/logs/cycle_${STAMP}.jsonl"
 TEXT_LOG="$BASE_DIR/logs/cycle_${STAMP}.last_message.txt"
+rm -f "$PENDING_OUTCOME"
 CYCLE_TIMEOUT_SECONDS="${CYCLE_TIMEOUT_SECONDS:-$("$PYTHON_BIN" "$CONFIG_VALUE" supervisor.cycle_timeout_seconds 1800)}"
 PROVIDER_EXEC_ARGS=()
 while IFS= read -r -d '' arg; do
@@ -66,7 +73,14 @@ fi
   echo "  last_message: $TEXT_LOG"
 } >> "$BASE_DIR/logs/runner.log"
 
-{
-  echo "[$(date '+%F %T')] validating cycle outcome for $STAMP"
-  "$PYTHON_BIN" "$BASE_DIR/scripts/validate_cycle_outcome.py" || true
-} >> "$BASE_DIR/logs/runner.log" 2>&1
+if ! "$PYTHON_BIN" "$BASE_DIR/scripts/finalize_cycle_outcome.py" --cycle-id "$STAMP" >> "$BASE_DIR/logs/runner.log" 2>&1; then
+  {
+    echo "cycle_id=$STAMP"
+    echo "pending_outcome=$PENDING_OUTCOME"
+    echo "log=$BASE_DIR/logs/runner.log"
+    echo "Resolve the outcome validation problem, then remove this file before another automatic cycle."
+  } > "$REVIEW_REQUIRED"
+  echo "[run_codex_cycle] outcome was not valid; REVIEW_REQUIRED created." | tee -a "$BASE_DIR/logs/runner.log"
+  exit 65
+fi
+rm -f "$REVIEW_REQUIRED"

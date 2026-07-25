@@ -60,6 +60,22 @@ def init_state(config: dict) -> None:
             path.write_text(f"{value}\n", encoding="utf-8")
 
 
+def init_runtime_ledgers() -> None:
+    template_root = Path(__file__).resolve().parents[1] / "templates"
+    ledgers = {
+        "current_status.md": template_root / "CURRENT_STATUS_TEMPLATE.md",
+        "research_lanes.md": template_root / "RESEARCH_LANES_TEMPLATE.md",
+    }
+    for name, template in ledgers.items():
+        destination = root() / "runtime" / name
+        if not destination.exists():
+            destination.write_text(template.read_text(encoding="utf-8"), encoding="utf-8")
+
+    journal = root() / "runtime" / "agent_journal.md"
+    if not journal.exists():
+        journal.write_text("# Agent Journal\n\nAppend one concise entry per planning cycle.\n", encoding="utf-8")
+
+
 def main() -> int:
     cfg = load_config()
     ensure_runtime_dirs()
@@ -70,6 +86,7 @@ def main() -> int:
         print(f"bootstrap_layout: {exc}", file=sys.stderr)
         return 1
     init_state(cfg)
+    init_runtime_ledgers()
     print(f"Bootstrapped agent layout at {root()}")
     for parent_name in ("workspaces", "originals"):
         parent = root() / parent_name

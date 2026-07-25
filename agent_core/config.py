@@ -63,6 +63,14 @@ def state_file(name: str) -> Path:
 
 
 def ensure_runtime_dirs() -> None:
-    for rel in ("logs", "runtime", "runtime/batch_low_api", "runtime/batch_low_api/batches", "runtime/batch_low_api_supervisor", "workspaces", "originals"):
+    for rel in (
+        "logs",
+        "runtime",
+        "runtime/cycle_outcomes",
+        "runtime/batch_low_api",
+        "runtime/batch_low_api/batches",
+        "runtime/batch_low_api_supervisor",
+        "workspaces",
+        "originals",
+    ):
         (ROOT / rel).mkdir(parents=True, exist_ok=True)
-

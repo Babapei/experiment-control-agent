@@ -1,0 +1,12 @@
+{
+  "provider": {
+    "type": "codex",
+    "command": "{root}/tests/fixtures/fake_successful_planner.sh"
+  },
+  "codex": {
+    "auth_required": false
+  },
+  "supervisor": {
+    "cycle_timeout_seconds": 5
+  }
+}

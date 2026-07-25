@@ -40,13 +40,14 @@ Before exiting, update:
 2. `runtime/agent_journal.md`
 3. `runtime/research_lanes.md` if lane state changed
 4. any project-specific dashboard configured by the profile
-5. `runtime/last_cycle_outcome.json`
+5. `runtime/pending_cycle_outcome.json`
 
-Write `runtime/last_cycle_outcome.json` using
-`templates/CYCLE_OUTCOME_TEMPLATE.json` as the schema. It must record the active
-agent mode, execution mode, reads performed, actions taken, artifacts/evidence
-created or inspected, exactly one satisfied success criterion or escalation
-criterion from the active mode contract, and the next decision.
+Write `runtime/pending_cycle_outcome.json` using
+`templates/CYCLE_OUTCOME_TEMPLATE.json` as the schema. The runner validates and
+archives it only after the cycle exits. It must record the active agent mode,
+execution mode, reads performed, actions taken, artifacts/evidence created or
+inspected, exactly one satisfied success criterion or escalation criterion from
+the active mode contract, and the next decision.
 
 Populate `mode_details` according to the active mode:
 

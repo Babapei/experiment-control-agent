@@ -39,8 +39,13 @@ launch_tmux_agent.sh
 - `runtime/batch_low_api/current_batch.md`: pointer to the latest batch plan.
 - `runtime/batch_low_api/batches/<id>/status.tsv`: package status events when
   the batch registry wrapper is used.
-- `runtime/last_cycle_outcome.json`: machine-readable summary of the planner's
-  reads, actions, evidence, success/escalation criterion, and next decision.
+- `runtime/pending_cycle_outcome.json`: outcome written by the current planner
+  call before runner validation; inspect it when `runtime/REVIEW_REQUIRED`
+  exists.
+- `runtime/last_cycle_outcome.json`: most recent validated outcome.
+- `runtime/cycle_outcomes/<cycle-id>.json`: immutable validated outcome history.
+- `runtime/REVIEW_REQUIRED`: blocks automatic planner calls after an invalid or
+  missing outcome until an operator resolves it and removes the marker.
 - `runtime/batch_low_api/usage_log.tsv`: token usage history.
 
 ## Config-Driven Parts

@@ -13,6 +13,8 @@ source "$BASE_DIR/scripts/load_provider_env.sh"
 
 LOCK_FILE="$BASE_DIR/runtime/run_batch_low_api_cycle.lock"
 PID_FILE="$BASE_DIR/runtime/run_batch_low_api_cycle.pid"
+PENDING_OUTCOME="$BASE_DIR/runtime/pending_cycle_outcome.json"
+REVIEW_REQUIRED="$BASE_DIR/runtime/REVIEW_REQUIRED"
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
   echo "[run_batch_low_api_cycle] another low-API cycle is already running; skipping." | tee -a "$BASE_DIR/logs/batch_low_api_runner.log"
@@ -29,6 +31,10 @@ if [[ "${HONOR_PAUSE:-0}" == "1" && -f "$BASE_DIR/runtime/PAUSE" ]]; then
   echo "[run_batch_low_api_cycle] PAUSE file present, skipping."
   exit 0
 fi
+if [[ -f "$REVIEW_REQUIRED" ]]; then
+  echo "[run_batch_low_api_cycle] REVIEW_REQUIRED present; inspect and remove it before starting another automatic cycle."
+  exit 0
+fi
 
 if [[ "${PROVIDER_AUTH_REQUIRED:-true}" == "true" && ! -f "$CODEX_HOME/auth.json" ]]; then
   echo "[run_batch_low_api_cycle] missing Codex auth at $CODEX_HOME/auth.json" | tee -a "$BASE_DIR/logs/batch_low_api_runner.log"
@@ -38,6 +44,7 @@ fi
 STAMP="$(date '+%Y%m%d_%H%M%S')"
 JSONL_LOG="$BASE_DIR/logs/batch_low_api_cycle_${STAMP}.jsonl"
 TEXT_LOG="$BASE_DIR/logs/batch_low_api_cycle_${STAMP}.last_message.txt"
+rm -f "$PENDING_OUTCOME"
 CYCLE_TIMEOUT_SECONDS="${CYCLE_TIMEOUT_SECONDS:-$("$PYTHON_BIN" "$CONFIG_VALUE" supervisor.cycle_timeout_seconds 7200)}"
 BATCH_PROFILE="${BATCH_PROFILE:-$(cat "$BASE_DIR/runtime/BATCH_PROFILE" 2>/dev/null || "$PYTHON_BIN" "$CONFIG_VALUE" modes.default_batch_profile auto)}"
 CODEX_MODEL_OVERRIDE="${CODEX_MODEL_OVERRIDE:-}"
@@ -139,7 +146,14 @@ fi
 record_usage "completed"
 echo "[$(date '+%F %T')] completed low-API cycle $STAMP" >> "$BASE_DIR/logs/batch_low_api_runner.log"
 
-{
-  echo "[$(date '+%F %T')] validating low-API cycle outcome for $STAMP"
-  "$PYTHON_BIN" "$BASE_DIR/scripts/validate_cycle_outcome.py" || true
-} >> "$BASE_DIR/logs/batch_low_api_runner.log" 2>&1
+if ! "$PYTHON_BIN" "$BASE_DIR/scripts/finalize_cycle_outcome.py" --cycle-id "$STAMP" >> "$BASE_DIR/logs/batch_low_api_runner.log" 2>&1; then
+  {
+    echo "cycle_id=$STAMP"
+    echo "pending_outcome=$PENDING_OUTCOME"
+    echo "log=$BASE_DIR/logs/batch_low_api_runner.log"
+    echo "Resolve the outcome validation problem, then remove this file before another automatic cycle."
+  } > "$REVIEW_REQUIRED"
+  echo "[run_batch_low_api_cycle] outcome was not valid; REVIEW_REQUIRED created." | tee -a "$BASE_DIR/logs/batch_low_api_runner.log"
+  exit 65
+fi
+rm -f "$REVIEW_REQUIRED"

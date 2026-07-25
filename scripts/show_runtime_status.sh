@@ -20,6 +20,7 @@ for file in AGENT_MODE EXECUTION_MODE BATCH_PROFILE; do
 done
 [[ -f "$BASE_DIR/runtime/PAUSE" ]] && echo "PAUSE=present" || echo "PAUSE=absent"
 [[ -f "$BASE_DIR/runtime/STOP" ]] && echo "STOP=present" || echo "STOP=absent"
+[[ -f "$BASE_DIR/runtime/REVIEW_REQUIRED" ]] && echo "REVIEW_REQUIRED=present" || echo "REVIEW_REQUIRED=absent"
 
 echo
 echo "== active supervisors/cycles =="

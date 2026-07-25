@@ -109,6 +109,12 @@ def check_cycle_outcome(findings: list[Finding]) -> None:
         add(findings, item.severity, item.check, item.message)
 
 
+def check_review_required(findings: list[Finding]) -> None:
+    marker = root() / "runtime" / "REVIEW_REQUIRED"
+    if marker.exists():
+        add(findings, "WARN", "review_required", f"automatic planning is blocked pending review: {marker}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate generic agent runtime state.")
     parser.add_argument("--json", action="store_true")
@@ -120,6 +126,7 @@ def main() -> int:
     check_modes(findings, config)
     check_manifest(findings, config)
     check_cycle_outcome(findings)
+    check_review_required(findings)
 
     if args.json:
         print(json.dumps([asdict(item) for item in findings], ensure_ascii=False, indent=2))

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -16,6 +17,7 @@ from agent_core.provider import codex_exec_args, planning_provider
 from scripts.compute_signature import command_lines
 from scripts.batch_status import append_event, status_path, status_summary, validate_status_file
 from scripts.doctor import check_modes as doctor_check_modes, check_paths as doctor_check_paths
+from scripts.finalize_cycle_outcome import finalize_cycle_outcome
 from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
 from scripts.render_prompt import render_context
 from scripts.validate_cycle_outcome import check_outcome as check_cycle_outcome_payload
@@ -86,6 +88,27 @@ class ProviderTests(unittest.TestCase):
 
 
 class BootstrapLayoutTests(unittest.TestCase):
+    def test_init_runtime_ledgers_creates_neutral_files_without_overwriting(self) -> None:
+        import scripts.bootstrap_layout as bootstrap_layout
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            control_root = Path(tmpdir) / "control"
+            (control_root / "runtime").mkdir(parents=True)
+            original_root = bootstrap_layout.root
+            bootstrap_layout.root = lambda: control_root
+            try:
+                bootstrap_layout.init_runtime_ledgers()
+                self.assertIn("# Current Status", (control_root / "runtime" / "current_status.md").read_text(encoding="utf-8"))
+                self.assertIn("# Research Lanes", (control_root / "runtime" / "research_lanes.md").read_text(encoding="utf-8"))
+                journal = control_root / "runtime" / "agent_journal.md"
+                self.assertIn("# Agent Journal", journal.read_text(encoding="utf-8"))
+                journal.write_text("existing project chronology\n", encoding="utf-8")
+                bootstrap_layout.init_runtime_ledgers()
+            finally:
+                bootstrap_layout.root = original_root
+
+            self.assertEqual((control_root / "runtime" / "agent_journal.md").read_text(encoding="utf-8"), "existing project chronology\n")
+
     def test_link_map_refuses_existing_regular_file(self) -> None:
         import scripts.bootstrap_layout as bootstrap_layout
 
@@ -297,6 +320,31 @@ class PromptRenderTests(unittest.TestCase):
 
 
 class CycleOutcomeTests(unittest.TestCase):
+    def valid_payload(self) -> dict:
+        config = load_config()
+        contract = get_value(config, "modes.agent_mode_contracts.method_exploration")
+        return {
+            "agent_mode": "method_exploration",
+            "execution_mode": "manual",
+            "cycle_kind": "cycle",
+            "summary": "Reduced one uncertainty with a bounded probe.",
+            "reads": ["profiles/default/CYCLE_BRIEF.md"],
+            "actions": ["smoke test"],
+            "artifacts": ["runtime/current_status.md"],
+            "evidence_paths": ["profiles/default/CYCLE_BRIEF.md"],
+            "mode_details": {
+                "research_question": "Can a tiny candidate route provide useful signal?",
+                "hypothesis": "A bounded probe will expose whether the route is viable.",
+                "candidate_method": "Minimal prototype with one smoke-scale evaluation.",
+                "validation_design": "Run one small probe and inspect its completion artifact.",
+                "evaluation_signal": "Probe completes and produces interpretable evidence.",
+                "decision": "Continue with a narrower follow-up.",
+            },
+            "success_criterion_met": contract["success_criteria"][0],
+            "escalation_criterion_used": "",
+            "next_decision": "continue audit with a narrower follow-up",
+        }
+
     def test_valid_cycle_outcome(self) -> None:
         config = load_config()
         contract = get_value(config, "modes.agent_mode_contracts.method_exploration")
@@ -324,6 +372,31 @@ class CycleOutcomeTests(unittest.TestCase):
         findings = []
         check_cycle_outcome_payload(findings, config, payload)
         self.assertFalse([item for item in findings if item.severity == "ERROR"])
+
+    def test_finalize_archives_valid_outcome_without_overwriting_history(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source = Path(tmpdir) / "pending.json"
+            archive_dir = Path(tmpdir) / "history"
+            latest = Path(tmpdir) / "latest.json"
+            source.write_text(json.dumps(self.valid_payload()), encoding="utf-8")
+
+            findings = finalize_cycle_outcome(source, archive_dir, latest, "cycle-001")
+            self.assertFalse([item for item in findings if item.severity == "ERROR"])
+            self.assertEqual(json.loads((archive_dir / "cycle-001.json").read_text(encoding="utf-8")), self.valid_payload())
+            self.assertEqual(json.loads(latest.read_text(encoding="utf-8")), self.valid_payload())
+
+            duplicate = finalize_cycle_outcome(source, archive_dir, latest, "cycle-001")
+            self.assertTrue([item for item in duplicate if item.severity == "ERROR" and "refusing to overwrite" in item.message])
+
+    def test_finalize_rejects_missing_outcome(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            findings = finalize_cycle_outcome(
+                Path(tmpdir) / "missing.json",
+                Path(tmpdir) / "history",
+                Path(tmpdir) / "latest.json",
+                "cycle-002",
+            )
+            self.assertTrue([item for item in findings if item.severity == "ERROR"])
 
     def test_cycle_outcome_requires_success_or_escalation(self) -> None:
         config = load_config()
@@ -374,6 +447,32 @@ class CycleOutcomeTests(unittest.TestCase):
         findings = []
         check_cycle_outcome_payload(findings, config, payload)
         self.assertTrue([item for item in findings if item.severity == "ERROR" and "mode_details.hypothesis" in item.message])
+
+
+class RunnerOutcomeBoundaryTests(unittest.TestCase):
+    def test_runner_requires_a_pending_outcome_before_publishing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            control_root = Path(tmpdir) / "control"
+            shutil.copytree(
+                ROOT,
+                control_root,
+                ignore=shutil.ignore_patterns(".git", "runtime", "logs", "__pycache__", "*.pyc", ".codex-home"),
+            )
+            fake_planner = control_root / "tests" / "fixtures" / "fake_successful_planner.sh"
+            fake_planner.chmod(0o755)
+            env = os.environ.copy()
+            env["AGENT_CONFIG"] = str(control_root / "tests" / "fixtures" / "missing_outcome_project.json")
+            proc = subprocess.run(
+                ["bash", str(control_root / "scripts" / "run_codex_cycle.sh")],
+                cwd=control_root,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
+            )
+            self.assertEqual(proc.returncode, 65, proc.stdout + proc.stderr)
+            self.assertTrue((control_root / "runtime" / "REVIEW_REQUIRED").exists())
+            self.assertFalse((control_root / "runtime" / "last_cycle_outcome.json").exists())
 
 
 class ScriptSmokeTests(unittest.TestCase):
