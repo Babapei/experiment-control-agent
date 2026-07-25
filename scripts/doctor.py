@@ -130,7 +130,35 @@ def check_paths(findings: list[Finding], cfg: dict[str, Any]) -> None:
             add(findings, "ERROR", section, f"{section} must be an object")
             continue
         for name, spec in entries.items():
-            path_text = spec if isinstance(spec, str) else spec.get("path", "") if isinstance(spec, dict) else ""
+            if isinstance(spec, str):
+                path_text = spec
+                add(
+                    findings,
+                    "WARN",
+                    section,
+                    f"{section}.{name} uses a legacy string path without an explicit writable declaration",
+                )
+            elif isinstance(spec, dict):
+                path_text = spec.get("path", "")
+                writable = spec.get("writable")
+                if "writable" not in spec:
+                    add(
+                        findings,
+                        "WARN",
+                        section,
+                        f"{section}.{name} has no writable declaration; declare true or false explicitly",
+                    )
+                elif not isinstance(writable, bool):
+                    add(findings, "ERROR", section, f"{section}.{name}.writable must be a boolean")
+                elif section == "originals" and writable:
+                    add(
+                        findings,
+                        "WARN",
+                        section,
+                        f"{section}.{name} is marked writable; original/reference roots are normally read-only",
+                    )
+            else:
+                path_text = ""
             if not path_text:
                 add(findings, "ERROR", section, f"{section}.{name} is missing path")
                 continue

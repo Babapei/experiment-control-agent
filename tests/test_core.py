@@ -15,7 +15,7 @@ from agent_core.config import get_value, load_config, resolve_path, root
 from agent_core.provider import codex_exec_args, planning_provider
 from scripts.compute_signature import command_lines
 from scripts.batch_status import append_event, status_path, status_summary, validate_status_file
-from scripts.doctor import check_modes as doctor_check_modes
+from scripts.doctor import check_modes as doctor_check_modes, check_paths as doctor_check_paths
 from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
 from scripts.render_prompt import render_context
 from scripts.validate_cycle_outcome import check_outcome as check_cycle_outcome_payload
@@ -277,6 +277,23 @@ class PromptRenderTests(unittest.TestCase):
         findings = []
         doctor_check_modes(findings, config)
         self.assertTrue([item for item in findings if item.severity == "ERROR" and "missing a contract" in item.message])
+
+    def test_doctor_warns_on_ambiguous_or_writable_originals(self) -> None:
+        findings = []
+        doctor_check_paths(
+            findings,
+            {
+                "workspaces": {"legacy": "/tmp/workspace"},
+                "originals": {
+                    "implicit": {"path": "/tmp/original"},
+                    "mutable": {"path": "/tmp/original-copy", "writable": True},
+                },
+            },
+        )
+        messages = [item.message for item in findings if item.severity == "WARN"]
+        self.assertTrue(any("legacy string path" in message for message in messages))
+        self.assertTrue(any("no writable declaration" in message for message in messages))
+        self.assertTrue(any("marked writable" in message for message in messages))
 
 
 class CycleOutcomeTests(unittest.TestCase):

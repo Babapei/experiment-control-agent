@@ -3,6 +3,10 @@
 Do not report private API keys, access tokens, credentials, private datasets, or
 unpublished research material in public issues.
 
+Read [`docs/TRUST_MODEL.md`](docs/TRUST_MODEL.md) before enabling automatic
+planning cycles. In particular, the bundled Codex runner uses a sandbox-bypass
+flag and must run only in a deliberately scoped trusted environment.
+
 ## Sensitive Files
 
 The following should remain local and untracked:
@@ -26,4 +30,3 @@ git status --short
 ```
 
 Review `.gitignore` and `git status` before pushing to a public remote.
-

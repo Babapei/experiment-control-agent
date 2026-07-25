@@ -133,6 +133,10 @@ manually before rerunning bootstrap.
 The core scripts do not enforce filesystem permissions. The profile and prompts
 tell the LLM planner what is safe.
 
+Set host filesystem permissions as well: the `writable` field is an explicit
+planner/reviewer declaration, not a sandbox. `doctor.py` warns about omitted
+declarations and originals marked writable. See [`TRUST_MODEL.md`](TRUST_MODEL.md).
+
 ## `job_detection`
 
 Used by `scripts/list_active_jobs.py`.
