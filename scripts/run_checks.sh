@@ -14,7 +14,8 @@ echo "== python compile =="
 "$PYTHON_BIN" -m py_compile agent_core/*.py scripts/*.py tests/*.py
 
 echo "== unit tests =="
-"$PYTHON_BIN" -m unittest discover -s tests -v
+AGENT_CONFIG="${TEST_CONFIG:-$BASE_DIR/configs/project.example.json}" \
+  "$PYTHON_BIN" -m unittest discover -s tests -v
 
 echo "== doctor =="
 "$PYTHON_BIN" scripts/doctor.py
