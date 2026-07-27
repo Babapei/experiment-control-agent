@@ -49,6 +49,20 @@ execution mode, reads performed, actions taken, artifacts/evidence created or
 inspected, exactly one satisfied success criterion or escalation criterion from
 the active mode contract, and the next decision.
 
+Keep the decision lineage explicit in the outcome:
+
+- `evidence_records` must give each evidence item an id, a state of `observed`
+  or `planned`, a path, a short summary, and its impact on this cycle. Observed
+  evidence must point to an existing file; a future output may be `planned`.
+- `action_records` must identify whether each action was completed, running,
+  planned, or deliberately not taken, and cite the evidence ids behind it.
+- `decision_evidence_ids` must cite the evidence that supports the next
+  decision. Do not present a proposed output as observed evidence.
+- Set `mode_transition` to `null` when staying in the current mode. If you
+  change mode, update `runtime/AGENT_MODE` and record the previous mode, new
+  mode, reason, and supporting evidence ids. A mode switch is optional and
+  must follow the project evidence, not a fixed global sequence.
+
 Populate `mode_details` according to the active mode:
 
 - `method_exploration`: `research_question`, `hypothesis`,

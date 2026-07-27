@@ -46,6 +46,11 @@ launch_tmux_agent.sh
 - `runtime/cycle_outcomes/<cycle-id>.json`: immutable validated outcome history.
 - `runtime/REVIEW_REQUIRED`: blocks automatic planner calls after an invalid or
   missing outcome until an operator resolves it and removes the marker.
+
+Each validated outcome separates observed evidence from planned evidence and
+records the evidence behind every action and next decision. An optional mode
+transition records why the researcher-agent changed its reasoning frame; the
+framework does not impose a mode order.
 - `runtime/batch_low_api/usage_log.tsv`: token usage history.
 
 ## Config-Driven Parts

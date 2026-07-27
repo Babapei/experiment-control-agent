@@ -320,6 +320,30 @@ class PromptRenderTests(unittest.TestCase):
 
 
 class CycleOutcomeTests(unittest.TestCase):
+    def lineage(self) -> dict:
+        return {
+            "evidence_records": [
+                {
+                    "id": "brief",
+                    "state": "observed",
+                    "path": "profiles/default/CYCLE_BRIEF.md",
+                    "summary": "The project brief defines the bounded cycle shape.",
+                    "impact": "It bounds the proposed probe and required state updates.",
+                }
+            ],
+            "action_records": [
+                {
+                    "id": "inspect-brief",
+                    "state": "completed",
+                    "description": "Read the cycle brief before selecting a probe.",
+                    "rationale": "The brief provides the available local context.",
+                    "evidence_ids": ["brief"],
+                }
+            ],
+            "decision_evidence_ids": ["brief"],
+            "mode_transition": None,
+        }
+
     def valid_payload(self) -> dict:
         config = load_config()
         contract = get_value(config, "modes.agent_mode_contracts.method_exploration")
@@ -332,6 +356,7 @@ class CycleOutcomeTests(unittest.TestCase):
             "actions": ["smoke test"],
             "artifacts": ["runtime/current_status.md"],
             "evidence_paths": ["profiles/default/CYCLE_BRIEF.md"],
+            **self.lineage(),
             "mode_details": {
                 "research_question": "Can a tiny candidate route provide useful signal?",
                 "hypothesis": "A bounded probe will expose whether the route is viable.",
@@ -357,6 +382,7 @@ class CycleOutcomeTests(unittest.TestCase):
             "actions": ["smoke test"],
             "artifacts": ["runtime/current_status.md"],
             "evidence_paths": ["profiles/default/CYCLE_BRIEF.md"],
+            **self.lineage(),
             "mode_details": {
                 "research_question": "Can a tiny candidate route provide useful signal?",
                 "hypothesis": "A bounded probe will expose whether the route is viable.",
@@ -372,6 +398,27 @@ class CycleOutcomeTests(unittest.TestCase):
         findings = []
         check_cycle_outcome_payload(findings, config, payload)
         self.assertFalse([item for item in findings if item.severity == "ERROR"])
+
+    def test_observed_evidence_must_exist(self) -> None:
+        config = load_config()
+        payload = self.valid_payload()
+        payload["evidence_records"][0]["path"] = "runtime/does-not-exist.json"
+        findings = []
+        check_cycle_outcome_payload(findings, config, payload)
+        self.assertTrue([item for item in findings if item.severity == "ERROR" and "observed evidence path" in item.message])
+
+    def test_mode_transition_must_match_the_outcome_mode(self) -> None:
+        config = load_config()
+        payload = self.valid_payload()
+        payload["mode_transition"] = {
+            "from": "method_exploration",
+            "to": "audit_validation",
+            "reason": "The current uncertainty needs an audit.",
+            "evidence_ids": ["brief"],
+        }
+        findings = []
+        check_cycle_outcome_payload(findings, config, payload)
+        self.assertTrue([item for item in findings if item.severity == "ERROR" and "mode_transition.to must match" in item.message])
 
     def test_finalize_archives_valid_outcome_without_overwriting_history(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

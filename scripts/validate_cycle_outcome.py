@@ -104,6 +104,114 @@ def check_evidence_paths(findings: list[Finding], evidence_paths: list[str]) -> 
             add(findings, "WARN", "cycle_outcome", f"evidence path does not exist: {path}")
 
 
+EVIDENCE_STATES = {"observed", "planned"}
+ACTION_STATES = {"completed", "running", "planned", "not_taken"}
+
+
+def require_record_string(findings: list[Finding], record: dict[str, Any], field: str, index: int, group: str) -> str:
+    value = record.get(field)
+    if not isinstance(value, str) or not value.strip():
+        add(findings, "ERROR", "cycle_outcome", f"{group}[{index}].{field} must be a non-empty string")
+        return ""
+    return value.strip()
+
+
+def check_evidence_records(findings: list[Finding], payload: dict[str, Any]) -> tuple[set[str], dict[str, str]]:
+    records = payload.get("evidence_records")
+    if not isinstance(records, list) or not records:
+        add(findings, "ERROR", "cycle_outcome", "evidence_records must be a non-empty list")
+        return set(), {}
+
+    ids: set[str] = set()
+    states: dict[str, str] = {}
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            add(findings, "ERROR", "cycle_outcome", f"evidence_records[{index}] must be an object")
+            continue
+        record_id = require_record_string(findings, record, "id", index, "evidence_records")
+        state = require_record_string(findings, record, "state", index, "evidence_records")
+        path_text = require_record_string(findings, record, "path", index, "evidence_records")
+        require_record_string(findings, record, "summary", index, "evidence_records")
+        require_record_string(findings, record, "impact", index, "evidence_records")
+        if record_id in ids:
+            add(findings, "ERROR", "cycle_outcome", f"evidence_records has duplicate id: {record_id!r}")
+        elif record_id:
+            ids.add(record_id)
+            states[record_id] = state
+        if state and state not in EVIDENCE_STATES:
+            add(findings, "ERROR", "cycle_outcome", f"evidence_records[{index}].state must be one of {sorted(EVIDENCE_STATES)}")
+        if state == "observed" and path_text and not resolve_path(path_text).exists():
+            add(findings, "ERROR", "cycle_outcome", f"observed evidence path does not exist: {resolve_path(path_text)}")
+    return ids, states
+
+
+def check_evidence_ids(
+    findings: list[Finding],
+    value: Any,
+    known_ids: set[str],
+    field: str,
+) -> list[str]:
+    if not isinstance(value, list) or not value:
+        add(findings, "ERROR", "cycle_outcome", f"{field} must be a non-empty list")
+        return []
+    result: list[str] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, str) or not item.strip():
+            add(findings, "ERROR", "cycle_outcome", f"{field}[{index}] must be a non-empty evidence id")
+            continue
+        item = item.strip()
+        result.append(item)
+        if item not in known_ids:
+            add(findings, "ERROR", "cycle_outcome", f"{field}[{index}] references unknown evidence id: {item!r}")
+    return result
+
+
+def check_action_records(findings: list[Finding], payload: dict[str, Any], evidence_ids: set[str]) -> None:
+    records = payload.get("action_records")
+    if not isinstance(records, list) or not records:
+        add(findings, "ERROR", "cycle_outcome", "action_records must be a non-empty list")
+        return
+    record_ids: set[str] = set()
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            add(findings, "ERROR", "cycle_outcome", f"action_records[{index}] must be an object")
+            continue
+        record_id = require_record_string(findings, record, "id", index, "action_records")
+        state = require_record_string(findings, record, "state", index, "action_records")
+        require_record_string(findings, record, "description", index, "action_records")
+        require_record_string(findings, record, "rationale", index, "action_records")
+        if record_id in record_ids:
+            add(findings, "ERROR", "cycle_outcome", f"action_records has duplicate id: {record_id!r}")
+        elif record_id:
+            record_ids.add(record_id)
+        if state and state not in ACTION_STATES:
+            add(findings, "ERROR", "cycle_outcome", f"action_records[{index}].state must be one of {sorted(ACTION_STATES)}")
+        check_evidence_ids(findings, record.get("evidence_ids"), evidence_ids, f"action_records[{index}].evidence_ids")
+
+
+def check_mode_transition(findings: list[Finding], payload: dict[str, Any], agent_mode: str, modes: dict[str, Any], evidence_ids: set[str]) -> None:
+    transition = payload.get("mode_transition", None)
+    if transition is None:
+        return
+    if not isinstance(transition, dict):
+        add(findings, "ERROR", "cycle_outcome", "mode_transition must be null or an object")
+        return
+    from_mode = require_record_string(findings, transition, "from", 0, "mode_transition")
+    to_mode = require_record_string(findings, transition, "to", 0, "mode_transition")
+    require_record_string(findings, transition, "reason", 0, "mode_transition")
+    check_evidence_ids(findings, transition.get("evidence_ids"), evidence_ids, "mode_transition.evidence_ids")
+    known_modes = modes.get("agent_modes", [])
+    if isinstance(known_modes, list):
+        if from_mode and from_mode not in known_modes:
+            add(findings, "ERROR", "cycle_outcome", f"mode_transition.from is not a configured agent mode: {from_mode!r}")
+        if to_mode and to_mode not in known_modes:
+            add(findings, "ERROR", "cycle_outcome", f"mode_transition.to is not a configured agent mode: {to_mode!r}")
+    if from_mode and to_mode and from_mode == to_mode:
+        add(findings, "ERROR", "cycle_outcome", "mode_transition.from and mode_transition.to must differ")
+    if to_mode and agent_mode and to_mode != agent_mode:
+        add(findings, "ERROR", "cycle_outcome", "mode_transition.to must match the outcome agent_mode")
+
+
 MODE_DETAIL_FIELDS = {
     "method_exploration": (
         "research_question",
@@ -160,6 +268,11 @@ def check_outcome(findings: list[Finding], config: dict[str, Any], payload: dict
     require_list(findings, payload, "actions")
     require_list(findings, payload, "artifacts")
     evidence_paths = require_list(findings, payload, "evidence_paths")
+    evidence_ids, evidence_states = check_evidence_records(findings, payload)
+    check_action_records(findings, payload, evidence_ids)
+    decision_evidence_ids = check_evidence_ids(findings, payload.get("decision_evidence_ids"), evidence_ids, "decision_evidence_ids")
+    if decision_evidence_ids and all(evidence_states.get(item) == "planned" for item in decision_evidence_ids):
+        add(findings, "WARN", "cycle_outcome", "next_decision is supported only by planned evidence")
 
     if agent_mode and active_agent_mode and agent_mode != active_agent_mode:
         add(findings, "ERROR", "cycle_outcome", f"agent_mode {agent_mode!r} does not match runtime AGENT_MODE {active_agent_mode!r}")
@@ -178,6 +291,7 @@ def check_outcome(findings: list[Finding], config: dict[str, Any], payload: dict
     else:
         check_contract_reference(findings, payload, contract)
     check_mode_details(findings, payload, agent_mode)
+    check_mode_transition(findings, payload, agent_mode, modes, evidence_ids)
     check_evidence_paths(findings, evidence_paths)
 
 

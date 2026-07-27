@@ -9,6 +9,26 @@
   "actions": [],
   "artifacts": [],
   "evidence_paths": [],
+  "evidence_records": [
+    {
+      "id": "evidence-001",
+      "state": "observed|planned",
+      "path": "",
+      "summary": "",
+      "impact": ""
+    }
+  ],
+  "action_records": [
+    {
+      "id": "action-001",
+      "state": "completed|running|planned|not_taken",
+      "description": "",
+      "rationale": "",
+      "evidence_ids": []
+    }
+  ],
+  "decision_evidence_ids": [],
+  "mode_transition": null,
   "mode_details": {},
   "success_criterion_met": "",
   "escalation_criterion_used": "",
