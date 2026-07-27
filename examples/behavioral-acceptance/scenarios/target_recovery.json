@@ -1,0 +1,6 @@
+{
+  "expected_mode": "target_recovery",
+  "required_observed_paths": ["examples/behavioral-acceptance/evidence/target_blocker.json"],
+  "decision_requires_observed": true,
+  "required_action_states": ["not_taken"]
+}

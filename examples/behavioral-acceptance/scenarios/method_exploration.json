@@ -1,0 +1,7 @@
+{
+  "expected_mode": "method_exploration",
+  "required_observed_paths": ["examples/behavioral-acceptance/evidence/method_probe_failed.json"],
+  "forbidden_observed_paths": ["examples/behavioral-acceptance/evidence/method_followup_planned.json"],
+  "decision_requires_observed": true,
+  "required_action_states": ["planned"]
+}

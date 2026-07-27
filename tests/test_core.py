@@ -17,6 +17,7 @@ from agent_core.provider import codex_exec_args, planning_provider
 from scripts.compute_signature import command_lines
 from scripts.batch_status import append_event, status_path, status_summary, validate_status_file
 from scripts.doctor import check_modes as doctor_check_modes, check_paths as doctor_check_paths
+from scripts.evaluate_behavioral_acceptance import evaluate as evaluate_behavioral_acceptance
 from scripts.finalize_cycle_outcome import finalize_cycle_outcome
 from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
 from scripts.research_history import history_attention, load_recent_outcomes, render_history
@@ -247,6 +248,27 @@ class ResearchHistoryTests(unittest.TestCase):
         self.assertTrue(any("current AGENT_MODE" in message for message in messages))
         self.assertTrue(any("unresolved historical actions" in message for message in messages))
         self.assertTrue(any("no longer present" in message for message in messages))
+
+
+class BehavioralAcceptanceTests(unittest.TestCase):
+    def test_acceptance_evaluator_requires_observed_decision_evidence(self) -> None:
+        expectations = {
+            "expected_mode": "method_exploration",
+            "required_observed_paths": ["profiles/default/CYCLE_BRIEF.md"],
+            "decision_requires_observed": True,
+            "required_action_states": ["planned"],
+        }
+        outcome = {
+            "agent_mode": "method_exploration",
+            "evidence_records": [{"id": "brief", "state": "observed", "path": "profiles/default/CYCLE_BRIEF.md"}],
+            "decision_evidence_ids": ["brief"],
+            "action_records": [{"id": "probe", "state": "planned"}],
+        }
+        self.assertFalse([item for item in evaluate_behavioral_acceptance(expectations, outcome) if item.severity == "ERROR"])
+
+        outcome["evidence_records"][0]["state"] = "planned"
+        findings = evaluate_behavioral_acceptance(expectations, outcome)
+        self.assertTrue([item for item in findings if item.severity == "ERROR" and "not supported by observed" in item.message])
 
 
 class BatchStatusTests(unittest.TestCase):
