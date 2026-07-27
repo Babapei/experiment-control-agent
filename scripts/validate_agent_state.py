@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agent_core.config import load_config, root, state_file
 from scripts.batch_status import validate_status_file
+from scripts.research_history import history_attention, load_recent_outcomes
 from scripts.validate_cycle_outcome import run_checks as run_cycle_outcome_checks
 
 
@@ -115,6 +116,14 @@ def check_review_required(findings: list[Finding]) -> None:
         add(findings, "WARN", "review_required", f"automatic planning is blocked pending review: {marker}")
 
 
+def check_history(findings: list[Finding], config: dict) -> None:
+    modes = config.get("modes", {})
+    current_mode = read(state_file("AGENT_MODE"), modes.get("default_agent_mode", ""))
+    outcomes, notices = load_recent_outcomes(root() / "runtime" / "cycle_outcomes")
+    for message in [*notices, *history_attention(outcomes, current_mode)]:
+        add(findings, "WARN", "history", message)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate generic agent runtime state.")
     parser.add_argument("--json", action="store_true")
@@ -127,6 +136,7 @@ def main() -> int:
     check_manifest(findings, config)
     check_cycle_outcome(findings)
     check_review_required(findings)
+    check_history(findings, config)
 
     if args.json:
         print(json.dumps([asdict(item) for item in findings], ensure_ascii=False, indent=2))

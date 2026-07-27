@@ -51,6 +51,11 @@ Each validated outcome separates observed evidence from planned evidence and
 records the evidence behind every action and next decision. An optional mode
 transition records why the researcher-agent changed its reasoning frame; the
 framework does not impose a mode order.
+
+`render_prompt.py` includes a bounded recent view of this validated history in
+every planning context. It highlights unresolved historical actions, missing
+previously observed evidence, and a current-mode mismatch for the planner to
+reconcile against live state. It does not infer the next scientific action.
 - `runtime/batch_low_api/usage_log.tsv`: token usage history.
 
 ## Config-Driven Parts

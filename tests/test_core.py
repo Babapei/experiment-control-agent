@@ -19,6 +19,7 @@ from scripts.batch_status import append_event, status_path, status_summary, vali
 from scripts.doctor import check_modes as doctor_check_modes, check_paths as doctor_check_paths
 from scripts.finalize_cycle_outcome import finalize_cycle_outcome
 from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
+from scripts.research_history import history_attention, load_recent_outcomes, render_history
 from scripts.render_prompt import render_context
 from scripts.validate_cycle_outcome import check_outcome as check_cycle_outcome_payload
 
@@ -214,6 +215,38 @@ class ProcessParsingTests(unittest.TestCase):
 class SignatureTests(unittest.TestCase):
     def test_missing_command_is_empty(self) -> None:
         self.assertEqual(command_lines(["definitely-not-a-real-agent-tool"]), [])
+
+
+class ResearchHistoryTests(unittest.TestCase):
+    def test_history_is_bounded_and_newest_first(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            archive_dir = Path(tmpdir)
+            old = {"agent_mode": "method_exploration", "cycle_kind": "cycle", "summary": "old", "evidence_records": [], "action_records": [], "next_decision": "old decision"}
+            new = {"agent_mode": "audit_validation", "cycle_kind": "cycle", "summary": "new", "evidence_records": [], "action_records": [], "next_decision": "new decision"}
+            (archive_dir / "20260727_100000.json").write_text(json.dumps(old), encoding="utf-8")
+            (archive_dir / "20260727_110000.json").write_text(json.dumps(new), encoding="utf-8")
+
+            outcomes, notices = load_recent_outcomes(archive_dir, limit=1)
+            rendered = render_history(outcomes, notices, "audit_validation")
+            self.assertEqual([item[0] for item in outcomes], ["20260727_110000"])
+            self.assertIn("new decision", rendered)
+            self.assertNotIn("old decision", rendered)
+
+    def test_history_attention_surfaces_mode_mismatch_and_missing_evidence(self) -> None:
+        outcomes = [
+            (
+                "cycle-1",
+                {
+                    "agent_mode": "method_exploration",
+                    "evidence_records": [{"id": "missing", "state": "observed", "path": "runtime/missing-proof.json"}],
+                    "action_records": [{"id": "probe", "state": "running"}],
+                },
+            )
+        ]
+        messages = history_attention(outcomes, "audit_validation")
+        self.assertTrue(any("current AGENT_MODE" in message for message in messages))
+        self.assertTrue(any("unresolved historical actions" in message for message in messages))
+        self.assertTrue(any("no longer present" in message for message in messages))
 
 
 class BatchStatusTests(unittest.TestCase):

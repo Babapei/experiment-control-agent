@@ -9,21 +9,24 @@ allowed a limited extra planning call while other jobs are still active.
 
 Read:
 
-1. `runtime/batch_low_api_supervisor/supplemental_context.md` if it exists
-2. `configs/project.json` if present, otherwise `configs/project.example.json`
-3. the rendered `active_agent_mode_contract`
-4. the configured project policy and cycle brief under `project_docs`
-5. `runtime/AGENT_MODE`
-6. `runtime/EXECUTION_MODE`; expect `batch_low_api`
-7. `runtime/BATCH_PROFILE`
-8. `runtime/current_status.md` if it exists
-9. `runtime/research_lanes.md` if it exists
-10. the last 80-120 lines of `runtime/agent_journal.md` if it exists
+1. the rendered recent validated decision history and state-attention notes
+2. `runtime/batch_low_api_supervisor/supplemental_context.md` if it exists
+3. `configs/project.json` if present, otherwise `configs/project.example.json`
+4. the rendered `active_agent_mode_contract`
+5. the configured project policy and cycle brief under `project_docs`
+6. `runtime/AGENT_MODE`
+7. `runtime/EXECUTION_MODE`; expect `batch_low_api`
+8. `runtime/BATCH_PROFILE`
+9. `runtime/current_status.md` if it exists
+10. `runtime/research_lanes.md` if it exists
+11. the last 80-120 lines of `runtime/agent_journal.md` if it exists
 
 Batch-planning rules:
 
 - Check active managed jobs first. If substantial work is still active, do not
   launch conflicting work.
+- Reconcile planned/running historical actions with live jobs and files before
+  launching a duplicate or incompatible package.
 - Treat the active agent mode as a contract. The batch must satisfy its required
   artifacts and success criteria, or record the matching escalation criterion.
 - Use the active mode as a reasoning frame, not a fixed checklist. You own the

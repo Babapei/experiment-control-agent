@@ -10,6 +10,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agent_core.config import config_path, load_config, resolve_path, root, state_file
+from scripts.research_history import load_recent_outcomes, render_history
 
 
 def read_state(name: str, default: str = "") -> str:
@@ -36,6 +37,12 @@ def render_context(config: dict[str, Any], prompt_kind: str) -> str:
     active_mode_contract_json = json.dumps(active_mode_contract, ensure_ascii=False, indent=2)
     manifest_columns = config.get("batch", {}).get("manifest_columns", [])
     reference_docs = (config.get("project_docs") or {}).get("reference_docs", [])
+    history_limit = 6
+    history_config = config.get("research_memory", {})
+    if isinstance(history_config, dict) and isinstance(history_config.get("recent_outcome_limit"), int):
+        history_limit = max(0, history_config["recent_outcome_limit"])
+    recent_outcomes, history_notices = load_recent_outcomes(root() / "runtime" / "cycle_outcomes", history_limit)
+    decision_history = render_history(recent_outcomes, history_notices, agent_mode)
 
     lines = [
         "# Rendered Agent Context",
@@ -57,6 +64,8 @@ def render_context(config: dict[str, Any], prompt_kind: str) -> str:
         "```json",
         active_mode_contract_json,
         "```",
+        "",
+        decision_history,
         "",
         "Read the configured project files above before making project-specific decisions.",
         "Follow the active_agent_mode_contract when choosing actions and required artifacts.",
