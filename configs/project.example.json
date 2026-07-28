@@ -209,6 +209,12 @@
       "\\b(agent_loop|event_agent_loop|batch_low_api_loop)\\.sh\\b"
     ]
   },
+  "planner_observation": {
+    "managed_jobs": true,
+    "tmux_sessions": false,
+    "gpu_compute_apps": false,
+    "additional_read_paths": []
+  },
   "results": {
     "watch_paths": ["runtime"],
     "file_patterns": ["metrics_summary.json", "completed.json", "*aggregate*.json", "*aggregate*.md"],

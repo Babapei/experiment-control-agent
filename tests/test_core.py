@@ -21,7 +21,7 @@ from scripts.evaluate_behavioral_acceptance import evaluate as evaluate_behavior
 from scripts.finalize_cycle_outcome import finalize_cycle_outcome
 from scripts.list_active_jobs import collect_jobs, parse_elapsed, parse_ps_line
 from scripts.research_history import history_attention, load_recent_outcomes, render_history
-from scripts.render_prompt import render_context
+from scripts.render_prompt import planner_observation, render_context
 from scripts.validate_cycle_outcome import check_outcome as check_cycle_outcome_payload
 
 
@@ -345,6 +345,29 @@ class PromptRenderTests(unittest.TestCase):
         self.assertIn("agents_policy", rendered)
         self.assertIn("active_agent_mode_contract", rendered)
         self.assertIn("manifest_columns", rendered)
+        self.assertIn("planner_observation", rendered)
+
+    def test_planner_observation_defaults_to_managed_scope(self) -> None:
+        observation = planner_observation({})
+        self.assertTrue(observation["managed_jobs"])
+        self.assertFalse(observation["tmux_sessions"])
+        self.assertFalse(observation["gpu_compute_apps"])
+        self.assertEqual(observation["additional_read_paths"], [])
+
+    def test_render_context_resolves_configured_observation_paths(self) -> None:
+        config = load_config()
+        config["planner_observation"] = {
+            "managed_jobs": False,
+            "tmux_sessions": True,
+            "gpu_compute_apps": True,
+            "additional_read_paths": ["profiles/default"],
+        }
+        config["workspaces"] = {"scratch": {"path": "runtime", "writable": True}}
+        rendered = render_context(config, "cycle")
+        self.assertIn('"managed_jobs": false', rendered)
+        self.assertIn('"tmux_sessions": true', rendered)
+        self.assertIn(str(ROOT / "profiles" / "default"), rendered)
+        self.assertIn('"name": "scratch"', rendered)
 
     def test_doctor_rejects_agent_mode_without_contract(self) -> None:
         config = load_config()

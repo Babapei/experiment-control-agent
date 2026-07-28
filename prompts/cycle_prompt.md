@@ -14,7 +14,8 @@ Start by reading:
 
 Perform one bounded research-management pass:
 
-- inspect active managed jobs and resource occupancy;
+- inspect active managed jobs and resource occupancy only when enabled by the
+  rendered `planner_observation` context;
 - analyze newly completed results only as needed for a concrete decision;
 - reconcile planned/running historical actions with live jobs and files before
   launching a duplicate or incompatible action;
@@ -36,6 +37,21 @@ Do not run an open-ended loop inside this Codex call. Supervisors are external.
 Do not modify originals or historical reference workspaces unless the project
 profile explicitly marks a path writable. Do not overwrite experiment evidence;
 use timestamped output roots and explicit log paths.
+
+Keep operational observation inside the configured boundary:
+
+- Read named files first. Do not recursively inventory the control root, use
+  `find .`, inspect `.git`, or inspect unconfigured paths just to discover
+  context.
+- When `planner_observation.managed_jobs` is true, use
+  `python3 scripts/list_active_jobs.py --json` for managed-job status. Do not
+  substitute a global process scan in the planner.
+- Use `tmux` only when `planner_observation.tmux_sessions` is true. Use
+  `nvidia-smi` only when `planner_observation.gpu_compute_apps` is true.
+- Treat the rendered workspaces, originals, project documents, runtime files,
+  result watch paths, and `additional_read_paths` as the available project
+  context. Ask for clarification or record an escalation when the necessary
+  evidence is outside that boundary.
 
 Before exiting, update:
 

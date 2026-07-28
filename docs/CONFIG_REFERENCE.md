@@ -157,6 +157,34 @@ Used by `scripts/list_active_jobs.py`.
 
 Keep hints narrow enough that the agent does not count unrelated jobs.
 
+## `planner_observation`
+
+Sets the operational context the planner may inspect during a cycle. This is
+separate from `results`, which controls supervisor change detection.
+
+```json
+{
+  "managed_jobs": true,
+  "tmux_sessions": false,
+  "gpu_compute_apps": false,
+  "additional_read_paths": ["workspaces/main/results"]
+}
+```
+
+- `managed_jobs`: permit the bounded `scripts/list_active_jobs.py --json`
+  inspection for processes belonging to this project profile.
+- `tmux_sessions`: permit direct tmux inspection. Keep this false unless the
+  project needs a declared tmux-based runner.
+- `gpu_compute_apps`: permit direct GPU occupancy inspection. Keep this false
+  for projects that do not schedule GPU work.
+- `additional_read_paths`: project paths beyond the configured docs,
+  workspaces, originals, runtime state, and result watch paths.
+
+The planner is instructed not to recursively inventory the repository or read
+unconfigured paths. This configuration documents and narrows the intended
+operational boundary; deploy an OS/container sandbox when strict enforcement
+against an untrusted provider is required.
+
 ## `results`
 
 Used by event and batch supervisors to detect meaningful changes.

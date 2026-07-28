@@ -25,6 +25,40 @@ def doc_path(config: dict[str, Any], key: str) -> str:
     return str(resolve_path(value)) if value else ""
 
 
+def configured_paths(config: dict[str, Any], key: str) -> list[dict[str, object]]:
+    entries = config.get(key, {})
+    if not isinstance(entries, dict):
+        return []
+    paths: list[dict[str, object]] = []
+    for name, item in sorted(entries.items()):
+        if isinstance(item, str):
+            path = item
+            writable = False
+        elif isinstance(item, dict):
+            path = str(item.get("path", ""))
+            writable = bool(item.get("writable", False))
+        else:
+            continue
+        if path:
+            paths.append({"name": str(name), "path": str(resolve_path(path)), "writable": writable})
+    return paths
+
+
+def planner_observation(config: dict[str, Any]) -> dict[str, object]:
+    configured = config.get("planner_observation", {})
+    if not isinstance(configured, dict):
+        configured = {}
+    additional = configured.get("additional_read_paths", [])
+    if not isinstance(additional, list):
+        additional = []
+    return {
+        "managed_jobs": bool(configured.get("managed_jobs", True)),
+        "tmux_sessions": bool(configured.get("tmux_sessions", False)),
+        "gpu_compute_apps": bool(configured.get("gpu_compute_apps", False)),
+        "additional_read_paths": [str(resolve_path(item)) for item in additional if str(item).strip()],
+    }
+
+
 def render_context(config: dict[str, Any], prompt_kind: str) -> str:
     modes = config.get("modes", {})
     agent_mode = read_state("AGENT_MODE", modes.get("default_agent_mode", ""))
@@ -43,6 +77,9 @@ def render_context(config: dict[str, Any], prompt_kind: str) -> str:
         history_limit = max(0, history_config["recent_outcome_limit"])
     recent_outcomes, history_notices = load_recent_outcomes(root() / "runtime" / "cycle_outcomes", history_limit)
     decision_history = render_history(recent_outcomes, history_notices, agent_mode)
+    observation = planner_observation(config)
+    configured_workspaces = configured_paths(config, "workspaces")
+    configured_originals = configured_paths(config, "originals")
 
     lines = [
         "# Rendered Agent Context",
@@ -58,6 +95,9 @@ def render_context(config: dict[str, Any], prompt_kind: str) -> str:
         f"- reference_docs: `{json.dumps([str(resolve_path(item)) for item in reference_docs], ensure_ascii=False)}`",
         f"- batch_profile_settings: `{json.dumps(active_batch_profile, ensure_ascii=False)}`",
         f"- manifest_columns: `{json.dumps(manifest_columns, ensure_ascii=False)}`",
+        f"- configured_workspaces: `{json.dumps(configured_workspaces, ensure_ascii=False)}`",
+        f"- configured_originals: `{json.dumps(configured_originals, ensure_ascii=False)}`",
+        f"- planner_observation: `{json.dumps(observation, ensure_ascii=False)}`",
         "",
         "## Active Agent Mode Contract",
         "",
