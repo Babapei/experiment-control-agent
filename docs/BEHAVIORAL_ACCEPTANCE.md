@@ -17,6 +17,18 @@ state. They do not score hypothesis novelty or prescribe a particular method.
 | `audit_validation` | Incorporate a metric disagreement and complete a focused audit action. |
 | `target_recovery` | Incorporate a target blocker and avoid launching a recovery action that the evidence does not yet justify. |
 
+## Current Framework Status
+
+The bundled Codex-backed implementation completed this three-scenario,
+two-cycle acceptance gate in isolated control roots on 2026-07-28. The archived
+outcomes were rechecked on 2026-08-22 with the public scenario evaluator and
+strict outcome validator.
+
+This confirms the implemented core contract for the bundled provider. It does
+not validate an unimplemented provider adapter, every project profile, or the
+scientific correctness of a planner's conclusions. Run the protocol below when
+changing prompts, runners, provider behavior, or a project's operating policy.
+
 ## Live Evaluation
 
 Run each scenario in a fresh, isolated control-root copy with a real planning

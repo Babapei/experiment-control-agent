@@ -3,10 +3,12 @@
 A configurable server-side LLM control plane for planning, launching, and
 monitoring long-running research experiments.
 
-The default planning provider adapter uses `codex exec`, but the repository is
-structured around a generic control-plane idea: an LLM planner reads experiment
-state, launches ordinary long-running jobs, records evidence, and waits until a
-meaningful boundary before spending more API calls.
+The current runnable planning-provider adapter uses `codex exec`. The
+repository is structured around a generic control-plane idea: an LLM planner
+reads experiment state, launches ordinary long-running jobs, records evidence,
+and waits until a meaningful boundary before spending more API calls. A
+provider-neutral execution interface is future work; configuring another CLI as
+`provider.command` alone does not make it supported today.
 
 ## What This Is
 
@@ -101,9 +103,10 @@ Use these when needed:
 ## Planning Provider
 
 The config has a `provider` section for the planner execution boundary. The
-bundled adapter is `type: "codex"`, backed by the Codex CLI. Codex-specific
-home, auth, model, and fallback settings remain in the `codex` section for
-compatibility.
+only supported adapter is currently `type: "codex"`, backed by the Codex CLI.
+Codex-specific home, auth, model, and fallback settings remain in the `codex`
+section for compatibility. Other provider types fail setup validation rather
+than silently falling back to Codex.
 
 ## Execution Modes
 

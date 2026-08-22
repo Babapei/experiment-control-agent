@@ -33,6 +33,9 @@
     "retry_base_seconds": 300,
     "retry_max_seconds": 3600
   },
+  "research_memory": {
+    "recent_outcome_limit": 6
+  },
   "modes": {
     "agent_modes": ["method_exploration", "audit_validation", "target_recovery"],
     "default_agent_mode": "method_exploration",

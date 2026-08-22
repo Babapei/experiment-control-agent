@@ -28,11 +28,14 @@ The planning-provider execution boundary:
 }
 ```
 
-- `type`: provider adapter. The bundled adapter is `codex`.
+- `type`: provider adapter. `codex` is the only currently supported type.
 - `command`: executable used by the adapter.
 
 Codex-specific authentication, home, model, and fallback settings remain in the
 `codex` section. `provider.codex` may override those legacy fields when needed.
+Setting another `type` or only replacing `command` does not create a generic
+provider adapter: setup validation fails explicitly until a compatible adapter
+is implemented.
 
 ## `codex`
 
@@ -68,6 +71,19 @@ Controls loop timing:
 - `retry_base_seconds` / `retry_max_seconds`: backoff bounds after temporary
   failures.
 
+## `research_memory`
+
+Optional recent validated-outcome history rendered into every planning prompt:
+
+```json
+{
+  "recent_outcome_limit": 6
+}
+```
+
+- `recent_outcome_limit`: maximum number of newest archived outcomes to render.
+  Set `0` to omit history from the prompt. The default when omitted is `6`.
+
 ## `modes`
 
 Defines allowed mode values and defaults:
@@ -78,6 +94,20 @@ Defines allowed mode values and defaults:
 - `batch_profiles`: soft targets for low-API planning depth.
 
 Profiles are guidance for the prompt and supervisor state, not blind quotas.
+
+Each `batch_profiles.<name>` object currently exposes these soft planning
+signals to the planner:
+
+- `target_min_hours` / `target_max_hours`: intended duration range for a normal
+  batch.
+- `min_gpu_packages`: suggested number of independent GPU packages when GPU
+  work is appropriate.
+- `force_fill_idle_gpus`: legacy-named suggested idle-GPU capacity value.
+- `max_codex_turns`: intended planner-call budget for the batch.
+
+They do not automatically select experiments or force the agent to launch work
+just to consume resources. A project should set them conservatively or leave
+supplemental batching disabled.
 
 Each `agent_mode_contracts.<mode>` object must include:
 
